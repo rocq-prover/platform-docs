@@ -4,20 +4,20 @@
 
 COQDOC_AUTO=coqdoc.css
 
-# Select all the .v files in the current directory
-FILES=$(wildcard *.v)
-FILES_HTML=$(addsuffix .html,$(basename $(FILES)))
+# Select all the .v files in the current directory, excluding node_modules/
+FILES := $(shell find . -path './node_modules' -prune -o -name '*.v' -print)
+FILES_HTML := $(FILES:.v=.html)
 
 all: $(FILES_HTML)
 
 %.html: %.v %.glob jscoqdoc
-	./jscoqdoc $<
+	./jscoqdoc -d $(dir $@) $<
 
 %.glob: %.v
 	coqc $<
 
 clean:
-	rm -f *.vo *.vok .*.aux *.glob *.vos $(FILES_HTML) $(COQDOC_AUTO)
+	rm -f **/*.vo **/*.vok **/.*.aux **/*.glob **/*.vos $(FILES_HTML) $(COQDOC_AUTO)
 
 node_modules: package.json package-lock.json
 	npm i
