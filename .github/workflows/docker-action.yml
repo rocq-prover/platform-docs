@@ -40,10 +40,10 @@ jobs:
           path: |
             src/images
             src/node_modules
-            src/*.html
-            src/*.css
-            src/*.js
-            src/*.v
+            src/**/*.html
+            src/**/*.css
+            src/**/*.js
+            src/**/*.v
 
   # Deploy job
   deploy:
