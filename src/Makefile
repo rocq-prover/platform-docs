@@ -11,7 +11,9 @@ FILES_HTML := $(FILES:.v=.html)
 all: $(FILES_HTML)
 
 %.html: %.v %.glob jscoqdoc
-	./jscoqdoc -d $(dir $@) $<
+	./jscoqdoc $<
+	mv $(<F:.v=.html) $@
+	sed -i 's/\.\//\.\.\//' $@
 
 %.glob: %.v
 	coqc $<
