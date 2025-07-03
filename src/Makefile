@@ -13,7 +13,10 @@ all: $(FILES_HTML)
 %.html: %.v %.glob jscoqdoc
 	./jscoqdoc $<
 	mv $(<F:.v=.html) $@
-	sed -i 's/\.\//\.\.\//' $@
+	DIRNAME=$$(dirname $@ | sed 's|^\./||;s|/*$$||') ; \
+	DEPTH=$$(echo "$$DIRNAME" | awk -F/ '{if ($$1=="") print 0; else print NF}') ; \
+	PREFIX=$$(printf '../%.0s' $$(seq 1 $$DEPTH)) ; \
+	sed -i -E "s#(src|href)=\"\./#\1=\"$${PREFIX}#g" $@
 
 %.glob: %.v
 	coqc $<
