@@ -148,7 +148,7 @@ Obligations of vmap_obligations.
 
     There are two different methods to solve the remaining obligations.
 
-    You can solve the obligations one by one using the command [Next Obligations].
+    You can solve the obligations one by one using the command [Next Obligation].
     Doing so for [vmap] display the goal [length (map f ln) = length ln],
     which we can then solve using tactics.
 *)

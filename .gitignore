@@ -19,5 +19,7 @@
 *.bcf
 *.run.xml
 *.css
+src/*/**/*.html
 *~
 node_modules/
+.lia.cache
