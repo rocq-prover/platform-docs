@@ -324,7 +324,7 @@ Qed.
     of [x] or [y] is bigger.
     However, we can use that the measure [x + y] is decreasing for the usual
     well-founded order on [nat], as if [x] and [y] are strictly greater than [0],
-    then [x + y > x + (y - x) = y] and [x + y > y + (x - y) = y].
+    then [x + y > x + (y - x) = y] and [x + y > y + (x - y) = x].
 
     We can define [gcd] by well-founded recursion by annotating the definition with [wf (x + y) lt].
     We then get two obligations corresponding to the recursive goals, which
