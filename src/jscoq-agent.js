@@ -26,48 +26,6 @@ var jscoq_ids  = ['#main > div.code, #main > div.HIDEFROMHTML > div.code'];
 
 var sp = new URLSearchParams(location.search);
 
-// Dynamically compute base_path for jsCoq
-function computeBasePath() {
-    var scriptElem = document.currentScript;
-    var scriptUrl = '';
-    if (scriptElem && scriptElem instanceof HTMLScriptElement && scriptElem.src) {
-        scriptUrl = scriptElem.src;
-    }
-    // Parse paths into segments
-    var scriptPath = scriptUrl ? new URL(scriptUrl).pathname : '';
-    var scriptSegments = scriptPath.split('/').filter(Boolean);
-
-    var htmlPath = window.location.pathname;
-    var htmlSegments = htmlPath.split('/').filter(Boolean);
-
-    // Remove file names, keep directories
-    var jsDirSegments = scriptSegments.slice(0, -1);
-    var htmlDirSegments = htmlSegments.slice(0, -1);
-
-    // Find common prefix length
-    var i = 0;
-    while (i < jsDirSegments.length && i < htmlDirSegments.length && jsDirSegments[i] === htmlDirSegments[i]) {
-        i++;
-    }
-
-    // Build relative path: up from HTML dir to common ancestor, then down to JS dir
-    var upLevels = htmlDirSegments.length - i;
-    var relPath = '';
-    if (upLevels > 0) {
-        relPath = '../'.repeat(upLevels);
-    }
-    var downPath = jsDirSegments.slice(i).join('/');
-    if (downPath) {
-        if (relPath && !relPath.endsWith('/')) relPath += '/';
-        relPath += downPath;
-    }
-    // If still empty, use current directory
-    if (relPath === '') {
-        relPath = './';
-    }
-    return relPath;
-}
-
 var jscoq_opts = {
     backend:   sp.get('backend') || 'wa',
     layout:    'flex',
@@ -81,7 +39,7 @@ var jscoq_opts = {
     all_pkgs:  { '+': ['coq', 'equations'] },
     init_import: ['utf8'],
     implicit_libs: true,
-    node_modules_path: computeBasePath() + '/node_modules/',
+    node_modules_path: new URL('./', import.meta.url) + 'node_modules/',
 };
 
 async function jsCoqLoad() {
