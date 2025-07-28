@@ -345,8 +345,9 @@ Proof.
   - apply IHl.
 Abort.
 
-(** On real life examples, reproducing the patterns by hand with the good
-    induction hypotheses can quickly get tedious, if not challenging.
+(** On real life examples, reproducing the nested match-with pattern 
+    of defining functions and crafting a sufficiently strong
+    induction hypothesis can quickly get tedious, if not challenging.
     Inductive types and patterns can quickly get complicated.
     Moreover, functions may actually not even be defined following the
     structure of an inductive type making it hard to reproduce at all.
