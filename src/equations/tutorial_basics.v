@@ -34,7 +34,7 @@
   *** Prerequisites
 
   Needed:
-  - We assume known basic knowledge of Coq, of and defining functions by recursion
+  - We assume a basic knowledge of Coq and of defining functions by recursion
 
   Installation:
   - Equations is available by default in the Coq Platform
@@ -70,15 +70,14 @@ Arguments nil {_}.
 Arguments cons {_} _ _.
 
 (** To write a function [f : list A -> B] on lists or another a basic
-      inductive type, it suffices to write:
-    - Equations at the beginning of you function rather than Fixpoint
-    - For each constructor [cst x1 ... xn] like [cons a l], specify how [f]
-      computes on it by writing [f (cst x1 ... xn) := t] where [t] may
-      contain [f] recursively.
+      inductive type, it suffices to:
+    - Begin your definition with "[Equations]" rather than "[Fixpoint]".
+    - Specify how the function, [f], computes on each constructor, [cst x1 ... xn],
+      by writing [f (cst x1 ... xn) := t] where [t] may contain [f] recursively.
     - Separate the different cases by semi-colon "[;]"
     - As usual finish you definition by a dot "[.]"
 
-  For instance, we can define the function [tail], [length] and [app] by:
+  For instance, we can define the functions [tail], [length] and [app] by:
 *)
 
 Equations tail {A} (l : list A) : list A :=
@@ -113,8 +112,8 @@ Equations cst_b {A B} (b : B) (l : list A) : B :=
 cst_b b _ := b.
 
 (** - We can use notations both in the pattern matching (on the left-hand
-      side of :=) or in the bodies of the function (on the right-hand side
-      of :=). This provides an easy and very visual way to define functions.
+      side of "[:=]") or in the bodies of the function (on the right-hand side
+      of "[:=]"). This provides an easy visual way to define functions.
       For instance, with the usual notations for lists, we can redefine
       [length] and [app] as:
 *)
@@ -135,7 +134,7 @@ app' (a::l) l' := a :: (app' l l').
     closer to the the one provided by the [Fixpoint] command and Coq's native pattern-matching.
     With this syntax, we have to start each clause with "[|]" and separate the
     different patterns in a clause by "[,]", but we no longer have to repeat
-    the name of the functions nor to put parenthesis or finish a line by "[;]".
+    the name of the function nor to put parenthesis or finish a line by "[;]".
 
     With this syntax, we can rewrite [length] and [app] as:
   *)
@@ -188,7 +187,7 @@ Abort.
 
 (** [Equations] also supports nested pattern matching.
     For instance, we can define a function swapping lists of pairs
-    by matching pairs at the same as we match the list.
+    by matching the list and the pairs inside of it at the same time.
 *)
 
 Equations swap_list_pair {A B} (l : list (A * B)) : list (B * A) :=
@@ -214,11 +213,11 @@ fold_right f b _ := to_fill.
 
 (* You can uncomment the following tests to try your functions *)
 (*
-Succeed Example testing : map (Nat.add 1) (1::2::3::4::[]) = (2::3::4::5::[])
+Succeed Example testing : map (Nat.add 1) (1::2::3::4::nil) = (2::3::4::5::nil)
   := eq_refl.
-Succeed Example testing : @head_option nat [] = None := eq_refl.
-Succeed Example testing : head_option (1::2::3::[]) = Some 1 := eq_refl.
-Succeed Example testing : fold_right Nat.mul 1 (1::2::3::4::[]) = 24 := eq_refl.
+Succeed Example testing : @head_option nat nil = None := eq_refl.
+Succeed Example testing : head_option (1::2::3::nil) = Some 1 := eq_refl.
+Succeed Example testing : fold_right Nat.mul 1 (1::2::3::4::nil) = 24 := eq_refl.
 *)
 
 
@@ -235,7 +234,7 @@ Succeed Example testing : fold_right Nat.mul 1 (1::2::3::4::[]) = 24 := eq_refl.
     This is on purpose to prevent uncontrolled unfolding which can easily
     happen, particularly when doing well-founded recursion or reasoning
     about proof carrying functions.
-    Yet, note that it does not prevent us to use reflexivity when both sides
+    Yet this does not prevent us from using reflexivity when both sides
     of an equation are definitionally equal.
 
     For instance, consider [nil_app] the usual computation rule for [app].
@@ -251,9 +250,9 @@ Proof.
   reflexivity.
 Qed.
 
-(** If one really wishes to recover unfolding, it is possible though on a case by case
-    basis using the option [Global Transparent f] as shown below.
-    It is also possible to set this option globally with [Set Equations
+(** If one really wishes to recover unfolding, it is possible to enable it 
+    on a case by case basis using the option [Global Transparent f] as shown 
+    below. It is also possible to set this option globally with [Set Equations
     Transparent], but it is not recommended to casual users.
     To recover simplification by [simpl] and [cbn], one can additionally
     use the command [Arguments function_name !_ /. ].
@@ -280,19 +279,20 @@ Proof.
   Arguments f4 !_ /. cbn.
 Abort.
 
-(** Rather than using [cbn] or [simpl], for each function [f], [Equations]
-    internally proves an equality for each case of the pattern matching
-    defining [f], and declares it in a hint database named [f].
-    For instance, for [app], it proves and declares [app [] l' = l'] and
-    [app (a::l) l' = a :: (app l l')].
-    The equalities are named using the scheme "function_name_equation_n", and you
-    can check them out using the command [Print Rewrite HintDb function_name]:
-*)
+(** How does [Equations] work without [cbn] and [simpl]? Internally, [Equations]
+    proves an equality for each case of the pattern matches and stores them
+    in a hint database with the same name as the function. For the [app]
+    function we defined, [Equations] declared and proved [app [] l' = l'] and
+    [app (a::l) l' = a :: (app l l')] and stored them in the hint database
+    [app].
+    The equalities are named using the scheme "function_name_equation_n".
+    You can check them out using the command [Print Rewrite HintDb function_name]:
+ *)
 
 Print Rewrite HintDb app.
 
-(** It is then possible to simplify by the equations associated
-    to functions [f1 ... fn] using the tactic [autorewrite with f1 ... fn].
+(** It is then possible to simplify expressions with the functions [f1 ... fn]
+    by using the tactic [autorewrite with f1 ... fn].
     Note, it is also possible to simplify in hypotheses using
     [autorewrite with f1 ... fn in H].
 
@@ -315,21 +315,21 @@ Proof.
   - rewrite IHl1. reflexivity.
 Qed.
 
-(** This provide a fine control of unfolding as it simplifies only by the defining
-    equations, and will not unfold anything else, while leaving the possibility to
+(** This provides a fine control of unfolding as it simplifies only by the defined
+    equations, and will not unfold anything else, while giving the option to
     rewrite directly by a specific equation.
     In particular, compared to [cbn] it will never unfold unwanted terms, like
-    proofs terms that would be part of the definition, for instance, when defining
-    proof carrying function or functions by well-fouded recursion.
+    proof terms that would be part of the definition, for instance, when defining
+    proof carrying functions or defining functions by well-fouded recursion.
 *)
 
 (** *** 1.2.2 Proving properties by functional elimination
 
-    In the examples above [app_nil] and [app_assoc], we mimicked the pattern
+    In the examples above, [app_nil] and [app_assoc], we mimicked the pattern
     used in the definition of [app] by [induction l].
     While it works on simple examples, it quickly gets more complicated.
     For instance, consider the barely more elaborate example proving
-    that both definition of [nth_option] are equal.
+    that both definitions of [nth_option] are equal.
     We have to be careful to first revert [n] in order to generalise the
     induction hypotheses and get something strong enough when inducting on [l],
     and we then need to destruct n.
@@ -345,8 +345,9 @@ Proof.
   - apply IHl.
 Abort.
 
-(** On real life examples, reproducing the patterns by hand with the good
-    induction hypotheses can quickly get tedious, if not challenging.
+(** On real life examples, reproducing the nested match-with pattern 
+    of defining functions and crafting a sufficiently strong
+    induction hypothesis can quickly get tedious, if not challenging.
     Inductive types and patterns can quickly get complicated.
     Moreover, functions may actually not even be defined following the
     structure of an inductive type making it hard to reproduce at all.
@@ -401,7 +402,7 @@ Abort.
 
 Check half_elim.
 
-(** Moreover, [Equations] comes with a powerful tactic [funelim] that
+(** Moreover, [Equations] comes with a powerful tactic, [funelim], that
     applies the functional induction principle and simplifies the associated definition.
     To use it, it suffices to write [funelim (function_name a1 ... an)]
     where [a1 ... an] are the arguments you want to do your induction on.
@@ -447,7 +448,7 @@ Qed.
 (** *** 1.2.3 Discharging trivial goals with [simp]
 
     In practice, it often happens in proofs by functional induction that after
-    simplification we get a lot of uninteresting cases, that we would like to
+    simplification we get a lot of uninteresting cases that we would like to
     deal with in an automatic but controlled way.
     To help us, [Equations] provides a tactic [simp f1 ... fn]
     that first simplify the goal by [autorewrite with f1 ... fn] then
@@ -471,7 +472,7 @@ Abort.
 (** As you can see, by default [simp] does not try to prove goals that hold
     by definition, like [None = None].
     If you wish for [simp] to do so, or for [simp] to try any other tactic,
-    you need to add it as a hint to one of the hint databse [simp] used by [simp].
+    you need to add it as a hint to one of the hint databases used by [simp].
     In particular, you can extend [simp] to to prove definitional equality using
     the following command.
 *)
@@ -487,17 +488,17 @@ Qed.
 
     By default, the tactic [autorewrite with f] only simplifies a term by the
     equations defining [f], like [[] ++ l = l] for [app].
-    In practice, it can happen that there are more equations that we have proven that
-    we would like to use for automatic simplification when proving further properties.
-    For instance, when reasoning on [app], we may want to further always simplify
+    In practice, we may want to try other equations we have proved in our automatic
+    simplification
+    For instance, when reasoning on [app], we may want to further simplify
     by [app_nil : l ++ [] = l] or [app_assoc : (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3)].
-    It is possible to extend [autorewrite] (and hence [simp]) to make it automatic,
-    by adding lemma to the database associated to [f].
+    We can extend [autorewrite] (and hence [simp]) to automatically apply our
+    properties by adding them to the database associated to [f].
     This can be done with the following syntax:
 
       [ #[local] Hint Rewrite @lemma_name : function_name. ]
 
-    This is a very powerful personnalisable rewrite mechanism.
+    This is a very powerful customizable rewrite mechanism.
     Actually, this mechanism is expressive enough to be non-terminating if the
     wrong lemmas are added to the database.
     Indeed, while it is confluent and terminating using only the defining
@@ -545,7 +546,7 @@ Proof.
   - apply H.
 Abort.
 
-(** It actually enables to greatly automate proofs using [simp] *)
+(** It actually enables greatly automating proofs using [simp] *)
 Lemma rev_eq {A} (l l' : list A) : rev_acc l l' = rev l ++ l'.
 Proof.
   funelim (rev l); simp rev rev_acc app.
@@ -709,7 +710,7 @@ Equations head {A} (l : list A) (pf : l <> nil) : A :=
 head [] pf with (pf eq_refl) := { };
 head (a::l) _ := a.
 
-(** As exercices, you can try to:
+(** As exercises, you can try to:
     - Prove that both head functions are equal up to [Some]
     - Prove that a filtered list has a smaller length than the original one
     - Define a function [find_dictionary] that given a key and an
@@ -747,9 +748,9 @@ Succeed Example testing :
 
 (** ** 3. Where Clauses
 
-    As discussed, it often happens that we need to compute intermediate terms
+    As discussed, we often need to compute intermediate terms,
     which is the purpose of the [with] clause.
-    Similarly, it often happens that we need to define intermediate
+    Similarly, we often need to define intermediate
     functions, for instance to make the code clearer or because a function
     needs to be generalised.
 
@@ -758,7 +759,7 @@ Succeed Example testing :
     To define a function using a [where] clause, it suffices to start
     a new block after the main body starting with [where] and using
     [Equations]' usual syntax.
-    Though be careful that as it is defined in the context of the main
+    Though be careful that, as it is defined in the context of the main
     body, it is not possible to reuse the same names.
 
     The most standard example is a tail-recursive implementation of list
@@ -779,12 +780,12 @@ rev_acc_aux (a::tl) acc := rev_acc_aux tl (a::acc).
 
 Check rev_acc_elim.
 
-(** The first one is usually call the wrapper and the other the worker.
-    While the first one is obvious as it is the property we are trying to prove,
+(** The first one is usually called the wrapper and the other the worker.
+    While the first one is obvious, as it is the property we are trying to prove,
     Coq cannot invent the second one on its own.
-    Consequently, we cannot simply apply [funelim]. We need to apply ourself
-    the recurrence principle [rev_acc_elim] automatically generated by [Equations]
-    for [rev_acc] that is behind [funelim].
+    Consequently, we cannot simply apply [funelim]. We need to manually apply
+    the recurrence principle automatically generated by [Equations], [rev_acc_elim],
+    ourselves.
 *)
 
 Lemma rev_acc_rev {A} (l : list A) : rev_acc' l = rev l.
