@@ -472,7 +472,7 @@ Abort.
 (** As you can see, by default [simp] does not try to prove goals that hold
     by definition, like [None = None].
     If you wish for [simp] to do so, or for [simp] to try any other tactic,
-    you need to add it as a hint to one of the hint databases  used by [simp].
+    you need to add it as a hint to one of the hint databases used by [simp].
     In particular, you can extend [simp] to to prove definitional equality using
     the following command.
 *)
