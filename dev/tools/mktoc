@@ -1,0 +1,118 @@
+#!/bin/sh
+
+usage()
+{
+	cat <<EOF
+Usage: mktoc FILE...
+Number sections, subsections and subsubsections in coqdoc'ed documented
+Coq FILEs.
+Also write a Table of content after a line
+*** Table of content
+if it is present in the file.
+The section, subsection and subsubsections have the following format:
+(** ** A section *)
+(** *** A subsection *)
+(** **** A subsubsection *)
+
+It is possible to reuse mktoc on the same file (e.g. to update the numbering and
+table of content after some changes).
+EOF
+}
+
+case $0 in
+0)
+	usage
+	exit 1
+esac
+
+case $1 in
+-h | --help)
+	usage
+	exit 0
+esac
+
+tmptoc=tmptoc$$.tmp
+tmpfile=tmp_mktoc_$$.tmp
+TOCSTRING='\\*\\*\\* Table of content'
+
+trap "rm -vf $tmptoc $tmpfile" EXIT SIGINT SIGTERM SIGABRT
+
+for f; do
+	# First pass to get the numbering right and write the TOC in a temporary file
+	>"$tmptoc"
+	awk -v "tmp=$tmptoc" '
+		function spaces(num_spaces) {
+			res = "";
+			for (i = 0; i < num_spaces; i++)
+				res = " " res;
+			return res;
+		}
+		function remove_numbering() {
+			if ($3 ~ /^[0-9.]+$/)
+				$3 = "";
+			gsub(/[[:blank:]]+/, " ");
+		}
+		BEGIN {
+			nb_levels = 0;
+		}
+		/^\(\*\*[[:blank:]]+\*\*+/ {
+			remove_numbering()
+
+			level = length($2) - 1;
+			if (level > nb_levels)
+				nb_levels = level
+
+			numbering[level - 1]++;
+			for (i = level; i < nb_levels; i++)
+				numbering[i] = 0
+			
+			title = $3;
+			for (i = 4; i < NF; i++)
+				title = title " " $i
+
+			if (level == 1) {
+				item = numbering[level - 1] ".";
+			} else {
+				item = numbering[0];
+				for (i = 1; i < level; i++)
+					item = item "." numbering[i]
+			}
+
+			printf("(** %s %s %s *)\n", $2, item, title);
+			printf("%s- %s %s\n", spaces(2 * (level - 1)), item, title) >>tmp
+			next
+		}
+		1
+	' <"$f" >"$tmpfile"
+
+	mv "$tmpfile" "$f"
+
+	# Second pass to write the TOC
+	awk -v "tmp=$tmptoc" -v "tocstring=$TOCSTRING" '
+		function spaces(num_spaces) {
+			res = "";
+			for (i = 0; i < num_spaces; i++)
+				res = " " res;
+			return res;
+		}
+		$0 ~ tocstring {
+			# we need to save the indentation level
+			match($0, /^ */);
+			indent = RLENGTH;
+			print $0;
+			# next line(s) should be empty, we also skip any previous TOC
+			do {
+				getline
+			} while ($0 ~ /^ *$/ || $0 ~ /^ *- [0-9][0-9.]+/);
+			# now we need to dump the new TOC
+			printf("\n");
+			while (getline line <tmp) {
+				printf("%s%s\n", spaces(indent), line)
+			}
+			printf("\n");
+		}
+		1
+	' <"$f" >"$tmpfile"
+
+	mv "$tmpfile" "$f"
+done
