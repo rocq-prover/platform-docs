@@ -266,7 +266,7 @@ Abort.
 (** A particularly useful case is to introduce existentially quantified hypotheses.
 *)
 
-Goal forall P Q (f : forall x y, P x y -> Q x y),
+Goal forall (P Q : nat -> nat -> Prop) (f : forall x y, P x y -> Q x y),
      (exists (x y: nat), P x y) -> (exists (x y : nat), Q x y).
 Proof.
   intros P Q f (x & y & Pxy).
