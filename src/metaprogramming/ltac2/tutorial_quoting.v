@@ -13,13 +13,13 @@
     *** Table of content
 
       - 1. Names (ident / @, reference)
-      - 2. Terms and Ltac2
-        - 2.1 Terms in Ltac2
-        - 2.2 Ltac2 in terms
-        - 2.3 Performance note
-        - 2.4 Preterm and Ltac2 in term notations
-      - 3. Quotations as Ltac2 notations
-      - 4. Ltac1 and Ltac2
+      - 2. Quoting: Using Rocq's Terms in Ltac2
+        - 2.1 Quoting Terms
+        - 2.2 Quoting Terms Without Existantial Variables
+        - 2.3 Preterms : Internalize without Typechecking
+      - 3. Ltac2 in terms
+      - 4. Quotations as Ltac2 notations
+      - 5. Ltac1 and Ltac2
 
     *** Prerequisites
 
@@ -36,7 +36,7 @@ From Ltac2 Require Import Ltac2.
 (** Enable "printf" Ltac2 notation *)
 From Ltac2 Require Import Printf.
 
-(** ** 1 Names (ident / @, reference)
+(** ** 1. Names (ident / @, reference)
 
     The grammar of names may be trivial but it still needs some syntax
     to produce name constants in Ltac2 expression.
@@ -69,75 +69,257 @@ Fail Ltac2 Eval fun () => reference:(does_not_exist).
  *)
 Ltac2 Eval reference:(&does_not_exist).
 
-(** ** 2 Terms and Ltac2
 
-    *** 2.1 Terms in Ltac2
+(** ** 2. Quoting: Using Rocq's Terms in Ltac2
 
-    The language of Rocq terms (Gallina) and the Ltac2 language do not
-    have the same grammar.
+  The language of Rocq terms (Gallina) and the Ltac2 language are not the
+  same language, and do not have the same grammar.
 
-    For instance, [forall n, n + 0 = n] is a Gallina expression which
-    does not parse as a Ltac2 expression, and [fun () => 0] is a Ltac2
-    expression which does not parse as a Gallina expression.
+  For instance, [forall n, n + 0 = n] is a Gallina expression which
+  does not parse as a Ltac2 expression, and [fun () => 0] is a Ltac2
+  expression which does not parse as a Gallina expression.
 
-    However we can write a Ltac2 expression which contains a Gallina expression:
+  A Rocq term is not a Ltac2 expression, as is, but it can be turned into
+  a Ltac2 expression we can manipulate, in different ways.
+  Such an operation is call "quoting" (from Rocq to Ltac2).
+
+  *** 2.1 Quoting Terms
+
+  The most common method to quote a Rocq term, is to ['].
+  Its resulting type will be [constr], the type of Rocq term in [Ltac2].
 *)
 
-Ltac2 Eval constr:(forall n, n + 0 = n).
+Ltac2 Eval '(forall n, n + 0 = n).
 
-(** The Ltac2 expression [constr:(...)] has type [Ltac2.Init.constr]
-    (short name [constr]).
+(** A term [t] is quoted in two steps:
 
-    It is considered ill-formed if the term mentions unknown variables:
+  1. The term is internalized when the Ltac2 expression is typechecked.
+     This does several things like name resolution or interpreting notations.
+     See "internalization" through the glossary index in the reference manual.
+
+  2. When the Ltac2 expression is evaluated, the internalization of [t]
+     is typechecked in the current context, returning the elaborated term.
+     See "internalization" through the glossary index in the reference manual.
+
+  Note that [open_constr:] does not run typeclass inference.
+
+  For instance, trying to quote an undefinied variable returns an error:
 *)
-Fail Ltac2 Eval constr:(x).
 
-(** To be precise, the term is internalized (see "internalization"
-    through the glossary index in the reference manual) when the ltac2
-    expression is typechecked.
+Fail Ltac2 Eval '(x).
 
-    When the ltac2 expression is evaluated, it typechecks (see "type
-    inference" through the glossary index in the reference manual) the
-    given term, returning the elaborated term.
-
-    Because typechecking a term requires a context (which contains the
+(** Moreover, because typechecking a term requires a context (which contains the
     hypotheses), it throws an error if more than one goal is focused.
-    If no goal is focused (such as in the previous "Ltac2 Eval", the
-    section context (empty when there are no sections) is used instead
-    of the goal context. *)
+    For instance, the following fails as there are two goals after [split]:
+*)
+
 Goal True /\ True.
-  Fail split; let _ := constr:(0) in ().
-  (** The error is "thrown", meaning it cannot be caught by "try" and
-      can only be caught at toplevel with "Fail". *)
+  Fail split; let _ := '(0) in ().
+Abort.
+
+(** Moreover, this error is "thrown", meaning it cannot be caught by "try" and
+    can only be caught at toplevel with "Fail". *)
+Goal True /\ True.
   Fail try (split; let _ := constr:(0) in ()).
 Abort.
 
-(** [constr:(...)] runs typeclass inference at the end of
-    typechecking, and fails if typechecking produced an new
-    existential variables: *)
+(** If no goal is focused the section context (empty when there are no sections)
+    is used instead of the goal context.
+*)
+
+Section foo.
+  Variable (A : nat).
+
+  Ltac2 Eval 'A.
+
+End foo.
+
+(** ['] is an notation for [open_constr:]. The name [open_constr] comes
+    from the fact that quoted terms can includ existantial variables.
+    This is very practical to write tactics.
+
+    For instance, suppose, we have an hypothesis [forall x : A, B x] we want to specialize.
+    We would like to create a new goal of type [A], to prove [x : A] using tactics.
+
+    We can do so by:
+    1. Recovering the type [?a] by matching the type of the hypothesis
+    2. Creating a new existantial variables with [(_ :> a)],
+    3. Quoting it [let e := '(_ :> ?a)] to get a Ltac2 expression we can manipulate
+    4. Specialize the hypothesis [h] with [specialize ($h $e)]
+    5. Following these steps, the existential variables is shelved.
+       Therefore, to create a goal [A], we wrap the expression in [unshelve].
+
+    Combined, this gives us the following small tactic:
+*)
+
+Ltac2 forward (h : ident) :=
+  let h := Control.hyp h in
+  lazy_match! Constr.type h with
+  | forall (_ : ?a), _ =>
+      unshelve (
+        let e := '(_ :> $a) in
+        specialize ($h $e)
+      )
+  end.
+
+(** To refer to an hypothesis [H], we use [@H]*)
+
+Goal (forall n, n = 4) -> 5 = 4.
+  intros H. forward @H.
+  - exact 5.
+  - assumption.
+Qed.
+
+(** We can also wrap it in a notation, to do the quoting for us *)
+
+Ltac2 Notation "forward" h(ident) := forward h.
+
+Goal (forall n, n = 4) -> 5 = 4.
+  intros H. forward H.
+  - exact 5.
+  - assumption.
+Qed.
+
+(** *** 2.2 Quoting Terms Without Existantial Variables
+
+  It also possible to quote terms without allowing existential variables, using
+  the quotation [constr:] instead of [open_constr:].
+  For instance, quoting a wildcard [_] fails for [constr:]:
+*)
+
 Fail Ltac2 Eval constr:(_).
 
-(** When we want to allow new existential variables, we use
-    [open_constr:(...)] instead of [constr:(...)]. Note that
-    open_constr does not run typeclass inference.
+(** As for [open_constr], the resulting type of [constr:] is the type [constr]
+    Try not to confuse the Ltac2 type [constr], and the quotation syntax [constr:(...)].
 
-    [open_constr:(...)] has type [constr], and the [Ltac2 Eval]
-    printer prints the result of evaluating it using [constr:(...)].
+    As you may have noticed, the error message above is referring to instances:
+    "Could not find an instance for the following existential variables:?y : ?T".
+    The reasons is that to solve existantial variables, opposite to [open_constr:],
+    [constr:] runs typeclass inference.
 
-    The only difference between the [open_constr:(...)] and
-    [constr:(...)] syntaxes are in how they are evaluated.
+    Another difference is that [constr:(...)] substitutes all defined evars by
+    their bodies in the returned term. Because defined evars are
+    indistinguishable from their bodies, this difference only matters for
+    performance. The main impact is that it makes recursive term construction
+    using [constr:(...)] quadratic as the progressively constructed terms are
+    repeatedly traversed to do the evar expansions:
+*)
 
-    Try not to confuse [constr] as a Ltac2 type and the quotation
-    syntax [constr:(...)]. *)
-Ltac2 Eval open_constr:(_).
+Ltac2 rec nat_of_int (succ : constr -> constr) (n:int) :=
+  if Int.equal n 0 then
+    (* here constr vs open_constr does not matter since 0 is a trivial term *)
+    constr:(0)
+  else succ (nat_of_int succ (Int.sub n 1)).
 
-(** [open_constr:(...)] is more common than [constr:(...)] in
-    practice, so it has a shorter syntax ['term] (a quote character
-    followed by a term, at low parsing level when parentheses are not used). *)
-Ltac2 Eval 'nat.
-Ltac2 Eval '(0 + _).
+(** If [succ] uses [open_constr:(...)], [nat_of_int] is linear in [n]: *)
+Time Ltac2 Eval nat_of_int (fun x => '(S $x)) 5000.
 
-(** *** 2.2 Ltac2 in terms
+(** but with [constr:(...)] it is quadratic (n = 5000 is enough to
+    notice the slowdown without taking very long on the author's
+    machine, use a higher number if you have a faster machine). *)
+Time Ltac2 Eval nat_of_int (fun x => constr:(S $x)) 5000.
+
+(** You can play with th value of [n] to see the performance curve,
+    for instance 10_000 should take twice the time with
+    [open_constr:(...)] but four times with [constr:(...)]. *)
+
+
+(** *** 2.3 Preterms : Internalize without Typechecking
+
+    In some case, we want to manipulate a Rocq term in Ltac2, but do not want
+    to typecheck it as quoting does. Two main examples are:
+    - we have more than one goal, and need to postpone typehecking to focus first
+    - because we want to do typechecking differently, e.g. with coercions disable
+
+    In other words, we want to internalize a term, but postpone typechecking,
+    and trigger it by hand. This is possible, and corresponds to the Ltac2 type
+    [preterm], which can be created using the quotation [preterm:]. For
+    instance, let us quote a term that does not typecheck.
+*)
+
+Ltac2 Eval preterm:(fun x : 0 => x).
+
+(** A preterm can then be turned into a value of type [constr] using
+      [Ltac2.Constr.pretype], which runs typechecking.
+      (or [Ltac2.Constr.Pretype.pretype] for more control *)
+Fail Ltac2 Eval Constr.pretype preterm:(fun x : 0 => x).
+Ltac2 Eval Constr.pretype preterm:(fun x => x + 0).
+
+(** As an example, consider writing a small function [exists].
+    If we write a notation for it naively, then it will fail when linked with
+    [;] with another tactic, because there will be two goals:
+*)
+
+Ltac2 exists0 (t : constr) :=
+  unshelve (econstructor 1) > [exact $t |].
+
+Ltac2 Notation "exists" t(constr) := exists0 t.
+
+Goal {n | n <= 0} * {n | n <= 0}.
+  Fail split; exists 0.
+Abort.
+
+(** We need to postpone typechecking to after focusing the goals.
+    We can do so by quoting a [preterm] rather than a [constr], then typechecking by hand.
+*)
+
+Ltac2 Notation "exists" t(preterm) :=
+  Control.enter (fun () => exists0 (Constr.pretype t)).
+
+(** It now works as expected *)
+
+Goal {n | n <= 0} * {n | n <= 0}.
+  split; exists 0.
+Abort.
+
+(** A Ltac2 variable [x] of type preterm may be unquoted into Rocq terms using [$preterm:x].
+
+    Typechecking [$preterm:x] will typecheck the preterm bound to [x]
+    using the current flags of the surrounding term expression, and
+    the expected type according to the typechecking algorithm.
+
+    Multiple occurences of [$preterm:x] are typechecked independently.
+    For instance in the following example the hole for the type of [x]
+    produces separate existential variables, which are then
+    instantiated by unification to [nat] and [bool].
+ *)
+Ltac2 Eval
+  let id := preterm:(fun x : _ => x) in
+  '($preterm:id 0, $preterm:id false).
+
+(** Preterms also occur naturally when quoting Ltac2 inside a notation definition:
+    the notation variables are bound as Ltac2 variables of type preterm in the Ltac2 expression.
+
+    Inside the Ltac2 expression they are not bound as term variables:
+ *)
+Fail Notation "x ++ y" := (x + ltac2:(exact y)).
+
+(** and not bound with type constr: *)
+Fail Notation "x ++ y" := (x + ltac2:(exact $y)).
+
+(** but they are bound with type preterm: *)
+Notation "x ++ y" := (x + ltac2:(exact $preterm:y)) (only parsing).
+
+Check _ ++ 1.
+
+(** Since we used [exact] in the notation, it rejects unsolved existential variables on the right: *)
+Fail Check 0 ++ _.
+
+(** Note that preterms close over (contain a copy of) the Ltac2 bound
+    variables visible when it is created. For instance the following
+    produces "0" not "1": *)
+Ltac2 Eval let x := '0 in let y := preterm:($x) in let x := 1 in Constr.pretype y.
+
+(** and the following does not produce a "unbound variable x" error: *)
+Ltac2 Eval let y := let x := '0 in preterm:($x) in Constr.pretype y.
+
+(** and in general functions like the following work as expected: *)
+Ltac2 succ_preterm (x:preterm) := preterm:(S $preterm:x).
+
+Ltac2 Eval Constr.pretype (succ_preterm (succ_preterm (succ_preterm preterm:(0)))).
+
+
+(** *** 3. Ltac2 in terms
 
     We can write a Ltac2 expression inside a Gallina expression: *)
 Check ltac2:(exact 0).
@@ -204,104 +386,8 @@ Ltac2 Eval let x := '1 in '($x + $x).
     to run a tactic, it directly expands to the term bound to Ltac2
     variable [x]. *)
 
-(** *** 2.3 Performance note
 
-    We have seen that [open_constr:(...)] and [constr:(...)] differ in
-    whether new evars are allowed, and mentioned that [constr:(...)]
-    runs typeclass inference.
-
-    There is another difference: [constr:(...)] substitutes all
-    defined evars by their bodies in the returned term. Because
-    defined evars are indistinguishable from their bodies, this
-    difference only matters for performance. The main impact is that
-    it makes recursive term construction using [constr:(...)]
-    quadratic as the progressively constructed terms are repeatedly
-    traversed to do the evar expansions: *)
-
-Ltac2 rec nat_of_int (succ : constr -> constr) (n:int) :=
-  if Int.equal n 0 then
-    (* here constr vs open_constr does not matter since 0 is a trivial term *)
-    constr:(0)
-  else succ (nat_of_int succ (Int.sub n 1)).
-
-(** If [succ] uses [open_constr:(...)], [nat_of_int] is linear in [n]: *)
-Time Ltac2 Eval nat_of_int (fun x => '(S $x)) 5000.
-
-(** but with [constr:(...)] it is quadratic (n = 5000 is enough to
-    notice the slowdown without taking very long on the author's
-    machine, use a higher number if you have a faster machine). *)
-Time Ltac2 Eval nat_of_int (fun x => constr:(S $x)) 5000.
-
-(** You can play with th value of [n] to see the performance curve,
-    for instance 10_000 should take twice the time with
-    [open_constr:(...)] but four times with [constr:(...)]. *)
-
-(** *** 2.4 Preterms and Ltac2 in term notations
-
-    A value of type [Ltac2.Init.preterm] (short name [preterm])
-    corresponds to a term which has been internalized (see
-    "internalization" through the glossary index in the reference
-    manual) but not typechecker (see "type inference" through the
-    glossary index in the reference manual).
-
-    We may produce such values using the [preterm] quotation, for
-    instance if we don't want typechecking: *)
-Ltac2 Eval preterm:(fun x : 0 => x).
-
-(** A preterm may be turned into a value of type [constr] (not to be
-    confused with the [constr:(...)] quotation) by using
-    [Ltac2.Constr.pretype], which runs typechecking like the
-    [constr:(...)] quotation, or [Ltac2.Constr.Pretype.pretype] if we
-    want more control (for instance to skip typeclass inference). *)
-Fail Ltac2 Eval Constr.pretype preterm:(fun x : 0 => x).
-Ltac2 Eval Constr.pretype preterm:(fun x => x + 0).
-
-(** A Ltac2 variable [x] of type preterm may be quoted into terms
-    using [$preterm:x].
-
-    Typechecking [$preterm:x] will typecheck the preterm bound to [x]
-    using the current flags of the surrounding term expression, and
-    the expected type according to the typechecking algorithm.
-
-    Multiple occurences of [$preterm:x] are typechecked independently.
-    For instance in the following example the hole for the type of [x]
-    produces separate existential variables, which are then
-    instantiated by unification to [nat] and [bool].
- *)
-Ltac2 Eval let id := preterm:(fun x : _ => x) in '($preterm:id 0, $preterm:id false).
-
-(** Preterms also occur naturally when quoting Ltac2 inside a notation definition:
-    the notation variables are bound as Ltac2 variables of type preterm in the Ltac2 expression.
-
-    Inside the Ltac2 expression they are not bound as term variables:
- *)
-Fail Notation "x ++ y" := (x + ltac2:(exact y)).
-
-(** and not bound with type constr: *)
-Fail Notation "x ++ y" := (x + ltac2:(exact $y)).
-
-(** but they are bound with type preterm: *)
-Notation "x ++ y" := (x + ltac2:(exact $preterm:y)) (only parsing).
-
-Check _ ++ 1.
-
-(** Since we used [exact] in the notation, it rejects unsolved existential variables on the right: *)
-Fail Check 0 ++ _.
-
-(** Note that preterms close over (contain a copy of) the Ltac2 bound
-    variables visible when it is created. For instance the following
-    produces "0" not "1": *)
-Ltac2 Eval let x := '0 in let y := preterm:($x) in let x := 1 in Constr.pretype y.
-
-(** and the following does not produce a "unbound variable x" error: *)
-Ltac2 Eval let y := let x := '0 in preterm:($x) in Constr.pretype y.
-
-(** and in general functions like the following work as expected: *)
-Ltac2 succ_preterm (x:preterm) := preterm:(S $preterm:x).
-
-Ltac2 Eval Constr.pretype (succ_preterm (succ_preterm (succ_preterm preterm:(0)))).
-
-(** ** 3 Quotations as Ltac2 notations
+(** ** 4. Quotations as Ltac2 notations
 
     Most (all?) Ltac2 quotations do not need to be primitive (though
     they often are) and can be written as Ltac2 notations.
@@ -343,7 +429,8 @@ Ltac2 Notation "##" x(preterm) := Constr.pretype x.
 (* Ltac2 fast_constr_succ (x:constr) : constr := fast_constr:(S $x). *)
 (* Time Ltac2 Eval nat_of_int fast_constr_succ 5000. *)
 
-(** ** 4 Ltac1 and Ltac2
+
+(** ** 5. Ltac1 and Ltac2
 
     We can embed a Ltac1 expression into Ltac2 using [ltac1:(...)].
     The resulting Ltac2 expression has type [unit], and evaluating it
