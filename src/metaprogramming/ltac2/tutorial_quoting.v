@@ -41,13 +41,20 @@ From Ltac2 Require Import Printf.
     The grammar of names may be trivial but it still needs some syntax
     to produce name constants in Ltac2 expression.
 
-    For identifiers, [ident:(x)] and [@x] are equivalent Ltac2 expressions
-    which evaluate to the name "x" (of Ltac2 type [Ltac2.Init.ident], short name [ident]). *)
+    Identifiers are of type [ident], and can be create using [@x]
+    (short for [ident:(x)]) and evaluates to the name "x" *)
 Ltac2 Eval (ident:(x), @y).
 
-(** A slight printing inconsistency: the evaluated identifier is
-    printed ith the [@] syntax, but the non evaluated Ltac2 expression
-    is printed with [ident:(...)]: *)
+(** For instance, to refer to an hypothesis [H], we can use [@H] which creates
+    an ident "H" we can then pass to [Control.hyp] to recover the variable *)
+Goal nat -> bool.
+  intros H.
+  printf "the type is %t" (Constr.type (Control.hyp @H)).
+Abort.
+
+(** Note, up to Rocq 9.2, there is a slight printing inconsistency: the
+    evaluated identifier is printed ith the [@] syntax, but the non evaluated
+    Ltac2 expression is printed with [ident:(...)]: *)
 Ltac2 make_x () := @x.
 Print make_x.
 
@@ -60,12 +67,13 @@ Ltac2 Eval reference:(nat).
     The easiest way to print it is to use [Env.instantiate] to turn the reference into a term: *)
 Ltac2 Eval Env.instantiate reference:(nat).
 
-(** The name is resolved when the Ltac2 expression is typechecked, not when it is evaluated: *)
+(** Importantly, names are resolved when the Ltac2 expression is typechecked,
+  not when it is evaluated: *)
 Fail Ltac2 Eval fun () => reference:(does_not_exist).
 
 (** Using [&] forces the name to be interpreted as a variable name,
     without checking (we do not check because variables may be
-    dynamically introduced, see [&] in section 2.2 of this tutorial):
+    dynamically introduced, see [&] in section 3 of this tutorial):
  *)
 Ltac2 Eval reference:(&does_not_exist).
 
@@ -86,7 +94,7 @@ Ltac2 Eval reference:(&does_not_exist).
   *** 2.1 Quoting Terms
 
   The most common method to quote a Rocq term, is to ['].
-  Its resulting type will be [constr], the type of Rocq term in [Ltac2].
+  Its resulting type will be [constr], the type of Rocq terms in [Ltac2].
 *)
 
 Ltac2 Eval '(forall n, n + 0 = n).
@@ -133,6 +141,25 @@ Section foo.
   Ltac2 Eval 'A.
 
 End foo.
+
+(** The converse operation is "unquoting" which consit in turning a Ltac2
+    [constr] into a Rocq term, and can be performed with [$].
+
+    For instance, if we match the context for a proof of [h : False], we get the
+    associated Ltac2 [constr], with [Control.hyp], then we recover the Rocq term
+    with [$h] we can pass to [destruct].
+*)
+Ltac2 absurd () :=
+  lazy_match! goal with
+  | [ h : False |- _] =>
+      let h := Control.hyp h in
+      destruct $h
+  end.
+
+(** As an important technical point, note it is not possible to directly write
+    [$(Control.hyp h)]. It is only possible to unquote variables.
+    The reason is that ???
+*)
 
 (** ['] is an notation for [open_constr:]. The name [open_constr] comes
     from the fact that quoted terms can includ existantial variables.
@@ -272,7 +299,7 @@ Goal {n | n <= 0} * {n | n <= 0}.
   split; exists 0.
 Abort.
 
-(** A Ltac2 variable [x] of type preterm may be unquoted into Rocq terms using [$preterm:x].
+(** As for [constr], [preterm] can be unquoted into Rocq terms using [$preterm:x].
 
     Typechecking [$preterm:x] will typecheck the preterm bound to [x]
     using the current flags of the surrounding term expression, and
@@ -324,10 +351,9 @@ Ltac2 Eval Constr.pretype (succ_preterm (succ_preterm (succ_preterm preterm:(0))
     We can write a Ltac2 expression inside a Gallina expression: *)
 Check ltac2:(exact 0).
 
-(** The ltac2 expression is typechecked when the Gallina term is
-   internalized (see "internalization" through the glossary index in
-   the reference manual). It should have type [unit], but other types
-   are tolerated (with a warning).
+(** The ltac2 expression is typechecked when the Gallina term is internalized.
+    See "internalization" through the glossary index in the reference manual.
+    It should have type [unit], but other typesare tolerated (with a warning).
 
    When the Gallina term is typechecked (see "type inference" through
    the glossary index in the reference manual), a new existential
