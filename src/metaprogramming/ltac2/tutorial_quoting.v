@@ -272,33 +272,6 @@ Ltac2 Eval preterm:(fun x : 0 => x).
 Fail Ltac2 Eval Constr.pretype preterm:(fun x : 0 => x).
 Ltac2 Eval Constr.pretype preterm:(fun x => x + 0).
 
-(** As an example, consider writing a small function [exists].
-    If we write a notation for it naively, then it will fail when linked with
-    [;] with another tactic, because there will be two goals:
-*)
-
-Ltac2 exists0 (t : constr) :=
-  unshelve (econstructor 1) > [exact $t |].
-
-Ltac2 Notation "exists" t(constr) := exists0 t.
-
-Goal {n | n <= 0} * {n | n <= 0}.
-  Fail split; exists 0.
-Abort.
-
-(** We need to postpone typechecking to after focusing the goals.
-    We can do so by quoting a [preterm] rather than a [constr], then typechecking by hand.
-*)
-
-Ltac2 Notation "exists" t(preterm) :=
-  Control.enter (fun () => exists0 (Constr.pretype t)).
-
-(** It now works as expected *)
-
-Goal {n | n <= 0} * {n | n <= 0}.
-  split; exists 0.
-Abort.
-
 (** As for [constr], [preterm] can be unquoted into Rocq terms using [$preterm:x].
 
     Typechecking [$preterm:x] will typecheck the preterm bound to [x]
