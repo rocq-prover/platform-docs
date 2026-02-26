@@ -22,9 +22,9 @@ Tutorials and how-to guides serve different purposes and are complementary. Tuto
 build: [make "-j%{jobs}%"]
 install: [make "install"]
 depends: [
-  "coq" 
-  "coq-equations" 
-  "coq-hierarchy-builder"  {= "1.9.1" }
+  "rocq-prover"
+  "rocq-equations"
+  "coq-hierarchy-builder"  {= "1.10.2" }
 ]
 
 tags: [

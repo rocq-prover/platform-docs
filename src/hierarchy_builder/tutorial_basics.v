@@ -44,7 +44,7 @@
   of relations of the form `X is Y` (e.g. a vector space is a commutative
   group).
 
-  However, describing such hierarchies using Coq/Rocq commands takes a
+  However, describing such hierarchies using Rocq commands takes a
   lot of effort, is prone to errors and leads to code that is hard to maintain.
   Hierarchy Builder prodives commands that declare all the required objects
   automatically. It also guarantees a few properties, like the compatibility of
@@ -67,7 +67,7 @@
 *)
 
 From HB Require Import structures.
-From Coq Require Import PeanoNat.
+From Stdlib Require Import PeanoNat.
 
 (** ** 1. Mixins and structures: declaring a structure
 
@@ -76,8 +76,8 @@ From Coq Require Import PeanoNat.
   structure is the mixin, which is a record that regroups an "interesting" part
   of the content of a structure. The point of mixins is that they can be reused
   in several structures. In this sense, a structure can be thought of as a set
-  of mixins on a common subject. 
-   
+  of mixins on a common subject.
+
   We declare a record as a mixin by prefixing the definition of the record with
   the [HB.mixin] command.
 *)
@@ -165,7 +165,7 @@ Check fun (T : Semigroup.type) => T : Magma.type.
 
 (** ** 2. Instances : building an instance of a structure
 
-  Let us now build actual magmas. to find an instance for a given type, Coq/Rocq
+  Let us now build actual magmas. to find an instance for a given type, Rocq
   only looks at the "head" of the subject, which we call its key.
   For instance,
   - if the subject is [nat], then the key is [nat] and
@@ -201,13 +201,13 @@ HB.instance Definition _ := hasOp.Build nat Nat.add.
 Check nat : Magma.type.
 
 (** This also means that when we want to use a lemma about magmas on [nat], we
-  can give the subject [nat] and Coq/Rocq will automatically replace it with
+  can give the subject [nat] and Rocq will automatically replace it with
   the corresponding instance. For example, we can write
 *)
 
 Check eq_refl : op 1 1 = 2.
 
-(** and Coq/Rocq automatically applied the operation from the instance of magma
+(** and Rocq automatically applied the operation from the instance of magma
   on [nat] that we just declared to [1] and [1].
 *)
 
@@ -259,7 +259,7 @@ HB.factory Record isSemigroup T := {
 HB.about isSemigroup.
 
 (** As of now, the [isSemigroup] factory is not interesting since we can not do
-  anything with it. We need to tell Coq/Rocq how to transform an instance of
+  anything with it. We need to tell Rocq how to transform an instance of
   [isSemigroup] into instances of [hasOp] and [isAssoc]. We do this using what
   we call builders. We start a section of code declaring builders using the
   [HB.builders] command. It expects a context containing a subject and the
@@ -332,7 +332,7 @@ HB.mixin Record hasPoint T := {pt : T}.
 HB.structure Definition Pointed := {T of hasPoint T}.
 
 (** *** 4.2. Parameters
-  
+
   Sometimes, a structure depends on other objects for its definition, which we
   call parameters. For instance, when the subject of a structure S is a Type, a
   morphism between two instances T and U of S is a function between the
@@ -395,7 +395,7 @@ HB.instance Definition _ (T : Magma.type) :=
 End A.
 
 (** The instance of magma morphism on [idfun] is hidden in module [A], so
-  Coq/Rocq will not use it.
+  Rocq will not use it.
 *)
 
 Fail Check idfun nat : MagmaMorphism.type nat nat.
@@ -431,7 +431,7 @@ Check B.hidden.
 (** Non-forgetful inheritance is a common issue we encounter when building
   hierarchies of structures. This issue arises when there are several
   incompatible ways to build a structure on the same subject, usually using
-  coercions from the inheritance graph. Coq/Rocq takes one of them, but the user
+  coercions from the inheritance graph. Rocq takes one of them, but the user
   may implicitly expecting another. These causes errors that are hard to debug
   because they involve things that do not appear on screen.
 *)

@@ -6,15 +6,15 @@
 
     *** Summary
 
-    Universe polymorphism in Coq is a thorny subject in general, in the sense
+    Universe polymorphism in Rocq is a thorny subject in general, in the sense
     that it's rather difficult to approach for non-experts. Part of it is due
-    to the fact that Coq hides most things universes by default. For jobs that
-    don't need universe polymorphism, Coq does the right thing basically all
+    to the fact that Rocq hides most things universes by default. For jobs that
+    don't need universe polymorphism, Rocq does the right thing basically all
     the time with no user input, which is fantastic. However, when universe
     polymorphism _is_ needed and you, as a user, need to get into it, the
     hidden mechanisms tend to work against you. So let's unpack that.
 
-    Coq provides two mechanisms to support universe polymorphism in a broad
+    Rocq provides two mechanisms to support universe polymorphism in a broad
     sense. The historically first mechanism implemented is named “template
     polymorphism”. Nowadays, “proper” universe polymorphism is also supported.
     Unfortunately, numerous definitions in the standard library, such as the
@@ -63,7 +63,7 @@
     Haskell). But if you decide to give it one, as the Calculus of
     Constructions does, you cannot make it [Type] itself, because [Type: Type]
     leads to logical inconsistencies known as Girard's paradox. ([Check Type]
-    might appear to say that, but there are universes hidden there that Coq
+    might appear to say that, but there are universes hidden there that Rocq
     only prints if you ask for [Set Printing Universes], as we'll see.)
 
     The basic idea for universes is to organize types into a hierarchy. Usual
@@ -75,9 +75,9 @@
     associated with each element of the hierarchy is called a _universe level_
     or _universe_ for short.
 
-    In Coq, [Type@{0}] is written [Set] for historical reasons. The word [Type]
+    In Rocq, [Type@{0}] is written [Set] for historical reasons. The word [Type]
     on its own doesn't refer to any particular universe level; instead, it
-    means something closer to [Type@{_}] where Coq infers a universe level
+    means something closer to [Type@{_}] where Rocq infers a universe level
     based on context, which can be confusing. This is why any job that involves
     inspecting universes requires [Set Printing Universes], and why here we'll
     will write most universes explicitly.
@@ -89,7 +89,7 @@
     basic [list] type constructor [list] will be [Type@{1}], following the
     judgement [list: Type@{0} -> Type@{0}: Type@{1}].
 
-    Coq implements a rule called _cumulativity_ (which is independent from the
+    Rocq implements a rule called _cumulativity_ (which is independent from the
     CoC) which extends the judgement of universes to [Type@{i}: Type@{j}] for
     [i < j]. This makes it so that higher universes as essentially “larger”
     than lower universes, as if the lower universes were literally included in
@@ -102,7 +102,7 @@
 
     Let's see this in action by looking at a completely monomorphic definition
     of a product type, i.e., one that lives in a single fixed universe. As
-    mentioned before, Coq tries pretty hard to hide universes from you. One of
+    mentioned before, Rocq tries pretty hard to hide universes from you. One of
     the consequences is that we need [Set Printing Universes] to see anything
     we're doing. *)
 Open Scope type_scope.
@@ -129,7 +129,7 @@ Fail Check (fun (T: Type@{uprod+1}) => mprod T T).
     like [uprod] symbolic as long as there _exists_ a concrete assignment that
     keeps things well-typed.
 
-   Coq uses these so-called “algebraic” universes: a universe number is either
+   Rocq uses these so-called “algebraic” universes: a universe number is either
    a symbol (e.g. [uprod]), the successor of a symbol (e.g. [uprod+1]), or the
    max of two levels (e.g. [max(uprod, uprod+1)]). Counter-intuitively, we
    actually cannot specify universes directly by numbers. *)
@@ -143,11 +143,11 @@ Check Type@{max(uprod, uprod+1)}.
 (** The operators [+1] and [max] arise from typing rules; the important part is
     that these are the only ones needed to implement all the rules. The calculus
     of integers with [+1], [max], [<=] and [<] is decidable and thus it's
-    possible for Coq to carry out universe consistency checks using these
+    possible for Rocq to carry out universe consistency checks using these
     algebraic universes without assigning concrete numbers.
 
     Instead, when you use a term of type [Type@{i}] where a term of type
-    [Type@{j}] is required, Coq checks that the _constraint_ [i <= j] is
+    [Type@{j}] is required, Rocq checks that the _constraint_ [i <= j] is
     realizable: if it is, the constraint is recorded and the term is well-typed;
     otherwise a universe inconsistency error is raised. *)
 
@@ -186,7 +186,7 @@ Print Universes Subgraph (u uprod).
 Definition mprod_u (T: Type@{u}) := mprod T T.
 Print Universes Subgraph (u uprod).
 
-(** (This is one of the reasons why universes can be difficult to debug in Coq:
+(** (This is one of the reasons why universes can be difficult to debug in Rocq:
     any _use_ of a definition might impact universe constraints, so importing
     certain combinations of modules, adding debug lemmas, or any other change in
     global scope can affect whether code ten files over typechecks.) *)
@@ -343,7 +343,7 @@ Fail Definition state_lazy {S T: Type} (t: T): state S (lazyT T) :=
     in order to get a fresh universe from it. Two examples are:
     - Inlining: expanding the definition of [state] in the examples above
       exposes [prod] which generates fresh universe levels. This doesn't
-      prevent Coq from later matching/unifiying the expanded term with the
+      prevent Rocq from later matching/unifiying the expanded term with the
       original [state], so it usually works as long as you can dig deep enough
       to find the problematic inductive. Of course, this comes at the cost of
       breaking any nice abstractions you might have.

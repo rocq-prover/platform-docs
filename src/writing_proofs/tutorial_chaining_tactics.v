@@ -27,7 +27,7 @@
     - No Prerequisites
 
     Installation:
-  - Available by default with coq
+  - Available by default with Rocq
 
 *)
 
@@ -43,7 +43,7 @@ Section Chaining.
 
   Set Printing Parentheses.
 
-(** In Coq, we prove theorems interactively, applying at each step a tactic
+(** In Rocq, we prove theorems interactively, applying at each step a tactic
     that transform the goal, and basically corresponds to applying a logical resonning.
     Yet, in practice, it often happens that some of the primitive tactics are too low-level,
     and that a higher-level resoning step we would like to do gets decomposed into

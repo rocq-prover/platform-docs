@@ -1,13 +1,13 @@
-fullname: "Coq Platform Docs"
+fullname: "Rocq Platform Docs"
 shortname: platform-docs
 organization: Zimmi48 # To change later to "coq"
-synopsis: "A project of short tutorials and how-to guides for Coq features and Coq Platform packages."
+synopsis: "A project of short tutorials and how-to guides for Rocq features and Rocq Platform packages."
 description: |
-  This project aims to create an online compilation of short and interactive tutorials and how-to guides for Coq and the Coq Platform.
+  This project aims to create an online compilation of short and interactive tutorials and how-to guides for Rocq and the Rocq Platform.
 
-  Each core functionality and plugin of Coq and the Coq Platform should have (short) pedagogical tutorials and/or how-to guides demonstrating how to use the functionality, with practical examples. They should further be available online through an interactive interface, most likely using JSCoq.
+  Each core functionality and plugin of Rocq and the Rocq Platform should have (short) pedagogical tutorials and/or how-to guides demonstrating how to use the functionality, with practical examples. They should further be available online through an interactive interface, most likely using JSCoq.
 
-  Tutorials and how-to guides serve different purposes and are complementary. Tutorials guide a user during learning in discovering specific aspects of a feature like "Notations in Coq", by going through (simple) predetermined examples, and introducing notions gradually. In contrast, how-to guides are use-case-oriented and guides users through real life problems and their inherent complexity, like "How to define functions by well-founded recursion and reason about them".
+  Tutorials and how-to guides serve different purposes and are complementary. Tutorials guide a user during learning in discovering specific aspects of a feature like "Notations in Rocq", by going through (simple) predetermined examples, and introducing notions gradually. In contrast, how-to guides are use-case-oriented and guides users through real life problems and their inherent complexity, like "How to define functions by well-founded recursion and reason about them".
 authors:
 - name: "Thomas Lamiaux"
 - name: "Pierre Rousselin"
@@ -16,10 +16,10 @@ authors:
 dependencies:
 - description: Equations
   opam:
-    name: coq-equations
+    name: rocq-equations
 - description: Hierarchy Builder
   opam:
     name: coq-hierarchy-builder
 opam-file-maintainer: "Théo Zimmermann <theo.zimmermann@telecom-paris.fr>"
-tested_coq_opam_versions:
-- version: "8.20.1"
+tested_rocq_opam_versions:
+- version: "9.0.1"

@@ -28,11 +28,11 @@
     - No Prerequisites
 
     Installation:
-  - Available by default with Coq/Rocq
+  - Available by default with Rocq
 
 *)
 
-From Coq Require Import List.
+From Stdlib Require Import List.
 Import ListNotations.
 
 
@@ -71,7 +71,7 @@ Proof.
   Fail intros _ m H.
 Abort.
 
-(** In some cases, we do not wish to choose a name and would rather have Coq
+(** In some cases, we do not wish to choose a name and would rather have Rocq
     choose a name for us. This is possible with the [?] pattern.
 *)
 
@@ -170,7 +170,7 @@ Qed.
 (** To shorten the code, it is possible to do both at the same time using the
     intro pattern [[ x ... y | ... | z ... w ]]. It enables to give a
     name to each argument of each constructor, separating them by [|].
-    If neither branches nor names are specified, Coq will just use auto-generated names.
+    If neither branches nor names are specified, Rocq will just use auto-generated names.
 *)
 
 Goal forall P Q, P /\ Q -> Q /\ P.

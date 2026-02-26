@@ -5,7 +5,7 @@
     - Matthieu Sozeau
   *** Summary:
 
-  [Equations] is a plugin for Coq that offers a powerful support
+  [Equations] is a plugin for Rocq that offers a powerful support
   for writing functions by dependent pattern matching.
   In this tutorial, we focus on the facilities provided by [Equations] to
   define function by dependent pattern matching on indexed inductive types,
@@ -30,7 +30,7 @@
   *** Prerequisites:
 
   Needed:
-  - We assume basic knowledge of Coq, of and defining functions by recursion
+  - We assume basic knowledge of Rocq, of and defining functions by recursion
   - We assume basic knowledge of the plugin Equations, e.g, as presented
     in the tutorial Equations : Basics
 
@@ -39,7 +39,7 @@
     knowledge about them is not needed
 
   Installation:
-  - Equations is available by default in the Coq Platform
+  - Equations is available by default in the Rocq Platform
   - Otherwise, it is available via opam under the name coq-equations
 
 *)
@@ -49,7 +49,7 @@ From Equations Require Import Equations.
  (** ** 1. Basic Reasoning on Indexed Inductive Types
 
     Indexed inductive types are particular kind of inductive definitions
-    Given a fixed parameter [A : Type], vectors define a family of linked 
+    Given a fixed parameter [A : Type], vectors define a family of linked
     inductive types.
     One of the most well-known examples of indexed inductive types are vectors.
     Given a fixed parameter [A : Type], vectors define a family of inductive
@@ -74,7 +74,7 @@ Arguments vcons {_} _ _ _.
     constant accross all the return types of the constructors, whereas an index
     changes in at least one of the return types.
     For instance, in the definition of vectors the type [A] is a parameter
-    as it is constant across all the return types: [vec A 0] and [vec A (S n)]. 
+    as it is constant across all the return types: [vec A 0] and [vec A (S n)].
     However, [n:nat] is an index as it is not constant in the returns types:
     in the return type of [vnil] it is fixed to [0], and in the return type of [vcons] it is [S n].
     Indices always appear after the [:] in an inductive type declaration.
@@ -85,12 +85,12 @@ Arguments vcons {_} _ _ _.
     Noticeably pattern matching on constructors of indexed inductive types
     like [vec A n] may particularise the indices.
     For instance, matching a vector [v : vec A n] to [vnil] forces the
-    value [n] to be [0] while for [vcons] if forces [n] to be of the form 
+    value [n] to be [0] while for [vcons] if forces [n] to be of the form
     [S m] for some integer [m].
     Consequently, when writing a function on an indexed inductive type,
-    pattern-matching on the inductive type has an effect on other arguments 
+    pattern-matching on the inductive type has an effect on other arguments
     of the function, specializing them.
-    
+
     For instance, consider the definition of [vmap] and [vapp] :
 *)
 
@@ -205,10 +205,10 @@ Proof.
 Abort.
 
 (** An alternative is to change the way [rewrite] looks for matching subterms
-  in the goal, using the keyed unification strategy. With this setting, [rewrite (e : t = u)]  
-  looks for a syntactic match for the head of [t] in the goal but allows full 
-  conversion between arguments of [t] and the arguments of the matched application 
-  in the goal. This makes [simp] work up-to conversion of the indices. 
+  in the goal, using the keyed unification strategy. With this setting, [rewrite (e : t = u)]
+  looks for a syntactic match for the head of [t] in the goal but allows full
+  conversion between arguments of [t] and the arguments of the matched application
+  in the goal. This makes [simp] work up-to conversion of the indices.
   We can then directly call [congruence] to solve the induction case. *)
 
 #[local] Set Keyed Unification.
@@ -257,9 +257,9 @@ vtail (vcons a v) := v.
     [v'] where the first column has been forgotten.
 
     Note, that in this case, pattern matching on [n] needs to be added to help
-    Coq see it is a strictly decreasing structurally recursive definition on the index.
+    Rocq see it is a strictly decreasing structurally recursive definition on the index.
     [vmap vtail v'] can otherwise not be recognized as a syntactic subterm of [v'].
-    An alternative definition using well founded-recursion is presented below. 
+    An alternative definition using well founded-recursion is presented below.
 *)
 
 Equations diag {A n} (v : vec (vec A n) n) : vec A n :=
@@ -318,8 +318,8 @@ Print NoConfusion_nat.
     properties that can be derived by [Equations]:
     - The [NoConfusion] property that enables to distinguish object with different indices.
       It takes as argument objects in the total space [{n : nat & vec A n}] which is generated
-      once and for all with `Derive Signature for vec`. It enables 
-      to solve general equations between objects in potentially different instances of the 
+      once and for all with `Derive Signature for vec`. It enables
+      to solve general equations between objects in potentially different instances of the
       inductive family:
 *)
 Derive Signature for vec.
@@ -328,7 +328,7 @@ Check NoConfusion_vec.
 
 (**
     - The [NoConfusionHom] property that enables to distinguish objects with the
-      same indices (i.e., in the same instance of the inductive family), which 
+      same indices (i.e., in the same instance of the inductive family), which
       is useful for simplifying homogeneous equations:
 *)
 
@@ -339,31 +339,31 @@ Print NoConfusionHom_vec.
 
 (** While the [NoConfusionHom] property is derivable for many indexed inductive types,
     it is not the case that is derivable for all indexed inductive types.
-    It is derivable only when equality of constructors can be reduced to equality 
-    of the non-forced constructor arguments. A forced argument of a constructor 
-    is a constructor argument (say of variable name [x]) that appears in a pattern 
+    It is derivable only when equality of constructors can be reduced to equality
+    of the non-forced constructor arguments. A forced argument of a constructor
+    is a constructor argument (say of variable name [x]) that appears in a pattern
     position in an index of the constructor's type conclusion. Patterns are generated
-    from variables and constructor applications in this case. 
+    from variables and constructor applications in this case.
 
-    For example on vectors, this corresponds to the fact that for [vcons a n v : vec A (S n)], 
-    [n] appears in a pattern position in [S n]. Intuitively, the value of the *forced* 
-    constructor argument [n] can be inverted from the type [vec A (S n)]. 
-    [NoConfusionHom] for [vcons] proves that 
+    For example on vectors, this corresponds to the fact that for [vcons a n v : vec A (S n)],
+    [n] appears in a pattern position in [S n]. Intuitively, the value of the *forced*
+    constructor argument [n] can be inverted from the type [vec A (S n)].
+    [NoConfusionHom] for [vcons] proves that
     [vcons a n v = vcons a' n v' :> vec A (S n) <-> a = a' /\ v = v' :> vec A n],
     i.e. we can eliminate the trivial [n = n] equality on the forced argument [n].
     This ultimately relies on the [UIP] property for [nat] which shows that [forall e : n = n, e = eq_refl n].
 
     If it is not possible to derive it, then [Equations] may need the indices to
-    satisfy Uniqueness of Identity Proofs, asserting that all equality proofs are 
+    satisfy Uniqueness of Identity Proofs, asserting that all equality proofs are
     equal, i.e. [UIP : forall (A : Type) (a b : A) (p q : a = b), p = q], to be able to
-    elaborate the definition to a Coq term.
+    elaborate the definition to a Rocq term.
 
     UIP holds for types like [nat] where equality is decidable, but it is not provable
-    for all types. In particular, it is not provable for [Type] itself. 
-    It can be assumed as an axiom, but be mindful that while this is consistent with Coq's
-    vanilla theory and classical logic axioms, it is inconsistent with univalence, so you 
-    may not want to admit it globally in your development. Also, as for any axiom, 
-    it will result in stuck computations: [Equations] definitions relying on it will only be 
+    for all types. In particular, it is not provable for [Type] itself.
+    It can be assumed as an axiom, but be mindful that while this is consistent with Rocq's
+    vanilla theory and classical logic axioms, it is inconsistent with univalence, so you
+    may not want to admit it globally in your development. Also, as for any axiom,
+    it will result in stuck computations: [Equations] definitions relying on it will only be
     simplifiable using [simp] but no longer compute using e.g. [Eval compute].
 
     Consequently, [Equations] offers both options: you can declare it only for the types
@@ -382,18 +382,18 @@ Local Existing Instance uipa.
 Require Import Arith.
 Section Tactics.
 
-(** [Equations] provides tactics to access the pattern-matching and simplification 
+(** [Equations] provides tactics to access the pattern-matching and simplification
   engines directly inside proofs.
   When indexed inductive types are involved, it often provides better simplification
   tactics than the default [injection] and [inversion] tactics, that can handle
   dependent cases.
 *)
 
-(** To explicit pattern-matching and control the naming of variables/hypotheses 
-  introduced by an elimination, it is possible to use the 
-  [dependent elimination] tactic, which provides access to the [Equations] 
+(** To explicit pattern-matching and control the naming of variables/hypotheses
+  introduced by an elimination, it is possible to use the
+  [dependent elimination] tactic, which provides access to the [Equations]
   pattern-matching notation inside proofs.
-  Note that the syntax of the patterns for [dependent elimination] follows the 
+  Note that the syntax of the patterns for [dependent elimination] follows the
   syntax of Equation definitions clauses, rather than the Ltac tactics [as] clauses. *)
 
   Goal forall n m, n + m = m + n.
@@ -402,26 +402,26 @@ Section Tactics.
     dependent elimination m as [O|S m'].
   Abort.
 
-  (** As for Equations definitions, the patterns should cover solely the possible 
+  (** As for Equations definitions, the patterns should cover solely the possible
     values of the hypothesis. *)
   Goal forall a b (x : vec nat 2), (vcons a x = vcons b x) -> a = b.
-  Proof. 
+  Proof.
     intros a b x H.
     (** [x : vec nat 2], so the only possible case to consider is two [vcons] applications
         ending with [vnil]. *)
     dependent elimination x as [vcons hd (vcons tl vnil)].
-    (** [H : vcons a ... = vcons b ...] which implies [a = b]. [noconf H] applies 
-      no-confusion and substitution properties recursively to the type of [H] to 
+    (** [H : vcons a ... = vcons b ...] which implies [a = b]. [noconf H] applies
+      no-confusion and substitution properties recursively to the type of [H] to
       simplify it, resulting in a substitution of [b] by [a] in the goal. *)
     noconf H. reflexivity.
   Qed.
-  
-  (* The [dependent elimination _ as _] tactic is robust: it will fail if the 
+
+  (* The [dependent elimination _ as _] tactic is robust: it will fail if the
     given patterns are non-exhaustive or contains unused clauses *)
   Goal forall a b (x : vec nat 2), (vcons a x = vcons b x) -> a = b.
-  Proof. 
+  Proof.
     intros a b x H.
-    (** [x : vec nat 2], so the only possible case to consider is 
+    (** [x : vec nat 2], so the only possible case to consider is
       two [vcons] applications ending with [vnil]. *)
     (* This pattern-matching is non-exhaustive for [x: vec A 2]*)
     Fail dependent elimination x as [vcons hd vnil].
@@ -442,7 +442,7 @@ End Tactics.
     that is _parameterized_ by a value [x] of type [A] and _indexed_
     by another value of type [A].
     Its single constructor states that equality is reflexive, so the only way
-    to build an object of [eq x y] (in the empty context) is if [x] is 
+    to build an object of [eq x y] (in the empty context) is if [x] is
     definitionally equal to the term [y].
 
     [[
@@ -452,7 +452,7 @@ End Tactics.
 
     Pattern-matching on the equality then unifies the index [y] with the
     parameter [x], that is to a variable.
-    Consequently, we have determined the _value_ of the pattern [y] to be [x], 
+    Consequently, we have determined the _value_ of the pattern [y] to be [x],
     and it is no longer a candidate for refinement with available constructors like
     [0] or [S n].
     Such a pattern is said to be "inaccessible", and needs to be indicated
@@ -517,17 +517,17 @@ vmap'' f (S n) (vcons a v) := vcons (f a) (vmap'' f n v).
 Extraction vmap.
 Extraction vmap''.
 
-(** Using inaccessible patterns hence allows to separate explicitely the subjects of 
-  pattern-matchings and the inferred indices in definitions. The following alternative 
+(** Using inaccessible patterns hence allows to separate explicitely the subjects of
+  pattern-matchings and the inferred indices in definitions. The following alternative
   definition of the square matrix diagonal pattern-matches only on the [vec] argument,
-  but uses well-founded recursion on the index [n] to justify termination, as 
+  but uses well-founded recursion on the index [n] to justify termination, as
   [vmap vtail v'] is not a subterm of [v']. *)
 
 Equations diag_wf {A n} (v : vec (vec A n) n) : vec A n by wf n :=
 diag_wf (n:=?(O)) vnil := vnil ;
 diag_wf (n:=?(S _)) (vcons (vcons a v) v') := vcons a (diag_wf (vmap vtail v')).
 
-(* Again, one can observe the extractions of the two diagonal definitions to see 
+(* Again, one can observe the extractions of the two diagonal definitions to see
   that [diag_wf] is more efficient, not needing to pattern-match on the indices first. *)
 
 Extraction diag.
