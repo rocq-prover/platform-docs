@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: coq-community/docker-coq-action@v1
+      - uses: rocq-community/docker-rocq-action@v1
         with:
           opam_file: 'rocq-platform-docs.opam'
-          coq_version: '9.0.1'
+          rocq_version: '9.0.1'
           before_script: |
             startGroup "Workaround permission issue"
               sudo chown -R rocq:rocq .  # <--
