@@ -18,8 +18,9 @@ all: $(FILES_HTML)
 	PREFIX=$$(printf '../%.0s' $$(seq 1 $$DEPTH)) ; \
 	sed -i -E "s#(src|href)=\"\./#\1=\"$${PREFIX}#g" $@
 
+# we ignore stdout because it spams thousands of lines for the search tuto
 %.glob: %.v
-	coqc $<
+	coqc $< > /dev/null
 
 clean:
 	rm -f **/*.vo **/*.vok **/.*.aux **/*.glob **/*.vos $(FILES_HTML) $(COQDOC_AUTO)
