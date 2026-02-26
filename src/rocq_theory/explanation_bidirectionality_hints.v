@@ -4,7 +4,7 @@
 
   An explanation of bidirectionlity hints.
   After presenting the requisite background on bidirectional typing and
-  existential variables in Coq, we will see how bidirectionality hints affect
+  existential variables in Rocq, we will see how bidirectionality hints affect
   type checking of function applications, and we will illustrate with simple
   examples.
 
@@ -19,11 +19,11 @@
 
 (**
 Before we explain what bidirectionality hints are,
-we must first understand some basics of how type checking works in Coq.
+we must first understand some basics of how type checking works in Rocq.
 
 ** 1. Bidirectional typing
 
-Coq uses bidirectional typing, an approach to type systems that interleaves
+Rocq uses bidirectional typing, an approach to type systems that interleaves
 type checking with type inference. A bidirectional type system replaces the
 usual typing judgement [e : T] with two judgements: _type checking_
 [e ◃ T] where [T] is an input and _type inference_ [e ▹ T]
@@ -62,7 +62,7 @@ e ▹ T’     T’ ≡ T
 (Here we gave the subsumption rule using a type equality,
 or rather _unification_ ([T’ ≡ T]).
 A more general variant of the subsumption rule uses subtyping instead,
-and in fact such a generalization lets us deal with coercions in Coq.
+and in fact such a generalization lets us deal with coercions in Rocq.
 For the rest of this explanation, we will ignore coercions
 and only talk about unification ([T’ ≡ T]) to keep it simple.)
 
@@ -86,13 +86,12 @@ To check whether the application [f a] has a given type [T]:
 To a first approximation, the unification judgement ([T’ ≡ T]) merely
 denotes an equivalence relation between types.
 
-This story is further complicated in Coq by the presence of
-{{https://coq.inria.fr/doc/V8.20.0/refman/language/extensions/evars.html} existential variables}.
-To avoid fully spelling out all terms, in Coq, you can write
-wildcards ([_]) instead and Coq will try to infer them. Wildcards are replaced
+This story is further complicated in Rocq by the presence of existential variables.
+To avoid fully spelling out all terms, in Rocq, you can write
+wildcards ([_]) instead and Rocq will try to infer them. Wildcards are replaced
 with fresh existential variables with names like [?u] during pretyping.
 Existential variables will then be instantiated by unification:
-when a unification problem such as [?u ≡ T] is encountered, Coq will
+when a unification problem such as [?u ≡ T] is encountered, Rocq will
 use this information to instantiate the variable [?u].
 
 Thus, the typing rules above are interpreted statefully: there is a global set of
@@ -132,7 +131,7 @@ and [b] will be checked against a type [B ?x] containing less known information.
 Earlier, we showed the type checking rule for a function application with one argument.
 While function applications with multiple arguments [f a b] are technically
 multiple nested applications [(f a) b],
-for the purposes of type checking in Coq, they are treated as a single n-ary application.
+for the purposes of type checking in Rocq, they are treated as a single n-ary application.
 For example, the rule for type checking an application with two arguments [f a b] looks like this:
 
 [[[
@@ -205,7 +204,7 @@ bidirectionality hints, but fails with the hint [f _ & _]. *)
 - 2. check the second argument [(0 : B false) ◃ B ?x]: the type annotation gives us the inferred type [B false],
     which is unified with the checked type [B ?x], and we unify [false] with [?x] (note that this unification step happens
     even if [B] is not injective: in general, [B false ≡ B ?x] does not imply [false ≡ ?x];
-    unification in Coq is lossy, it does not aim to find most general unifiers);
+    unification in Rocq is lossy, it does not aim to find most general unifiers);
 - 3. unify the result types [C ?x ≡ nat]: it succeeds because we previously unified [?x] with [false].
  *)
 

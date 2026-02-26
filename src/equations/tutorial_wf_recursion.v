@@ -2,7 +2,7 @@
 
   *** Summary
 
-  [Equations] is a plugin for %\cite{Coq}% that offers a powerful support
+  [Equations] is a plugin for Rocq that offers a powerful support
   for writing functions by dependent pattern matching.
   In this tutorial, we focus on the facilities provided by Equations to
   define function using well-founded recursion and to reason about them.
@@ -30,7 +30,7 @@
   *** Prerequisites
 
   Needed:
-  - We assume basic knowledge of Coq, and of defining functions by recursion
+  - We assume basic knowledge of Rocq, and of defining functions by recursion
   - We assume basic knowledge of the Equations plugin and of obligations, e.g,
     as presented in the tutorials Equations: Basics and Equations: Obligations
 
@@ -41,20 +41,20 @@
     tactics [lia] and [auto with arith], but they can be used as black boxes
 
   Installation:
-  - Equations is available by default in the Coq Platform
+  - Equations is available by default in the Rocq Platform
   - Otherwise, it is available via opam under the name coq-equations
 
 *)
 
 From Equations Require Import Equations.
-From Coq Require Import List Arith Nat Lia.
+From Stdlib Require Import List Arith Nat Lia.
 Import ListNotations.
 
 
 (** ** 1. Introduction to well-founded recursion
 
-    For Coq to be consistent, all functions must be terminating.
-    To ensure they are, Coq checks that they satisfy a syntactic
+    For Rocq to be consistent, all functions must be terminating.
+    To ensure they are, Rocq checks that they satisfy a syntactic
     criterion named the guard condition.
     Roughly, the guard condition checks that all recursive calls are performed
     on arguments syntactically detected to be subterms of the original argument.
@@ -128,7 +128,7 @@ gcd x y with eq_dec y 0 => {
 
   **** More Formally
 
-   In a type theory like Coq's, however, defining a well-founded relation as one
+   In a type theory like Rocq's, however, defining a well-founded relation as one
    "not having infinitely decreasing sequence" is slightly too weak too use properly.
    Instead, we use the stronger notion of "accessibility" to define
    well-founded relations [R : A -> A -> Prop]. This is classically equivalent to having no
@@ -161,7 +161,7 @@ Print well_founded.
 
     **** In practice
 
-    There are several methods to define functions by well-founded recursion using Coq.
+    There are several methods to define functions by well-founded recursion using Rocq.
     They all have their pros and cons, but as a general rule defining functions
     and reasoning using well-founded recursion can be tedious.
 
@@ -217,7 +217,7 @@ Definition gcd_Fix (x y : nat) : nat :=
     and then define the function **as usual**.
 
     For instance, the function [nubBy] terminates as the size of the list decrease
-    in each recursive call according to the usual strict order [<] on [nat], [lt] in Coq.
+    in each recursive call according to the usual strict order [<] on [nat], [lt] in Rocq.
     We hence need to write [wf (size l) l] to define it by well-founded recursion:
 
     [[
@@ -611,7 +611,7 @@ Notation "x 'eqn:' p" := (exist _ x p) (only parsing, at level 20).
     Consequently, destructing the first component, in our case [f a],
     will only affect the right-hand side of the equality, and we will
     indeed get the desired equality [f a = Some p].
-    As it can be seen below it works perfectly, and Coq is even able to
+    As it can be seen below it works perfectly, and Rocq is even able to
     prove the call is terminating on its own leaving us no obligations
     to fill.
 *)

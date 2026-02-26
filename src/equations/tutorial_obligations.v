@@ -2,7 +2,7 @@
 
   *** Summary
 
-  [Equations] is a plugin for %\cite{Coq}% that offers a powerful support
+  [Equations] is a plugin for Rocq that offers a powerful support
   for writing functions by dependent pattern matching.
   In this tutorial, we discuss how it interface with [Program] to help write
   programs using obligations.
@@ -24,20 +24,20 @@
   *** Prerequisites
 
   Needed:
-  - We assume basic knowledge of Coq, and of defining functions by recursion
+  - We assume basic knowledge of Rocq, and of defining functions by recursion
   - We assume basic knowledge of the Equations plugin, e.g, as presented
     in the tutorial Equations: Basics
 
   Not needed:
 
   Installation:
-  - Equations is available by default in the Coq Platform
+  - Equations is available by default in the Rocq Platform
   - Otherwise, it is available via opam under the name coq-equations
 
 *)
 
 
-From Coq Require Import List.
+From Stdlib Require Import List.
 Import ListNotations.
 
 From Equations Require Import Equations.

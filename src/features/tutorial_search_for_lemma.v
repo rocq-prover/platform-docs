@@ -1,8 +1,8 @@
-(** * Search tutorial for Coq
+(** * Search tutorial for Rocq
 
     *** Summary
 
-	This tutorial is about the powerful [Search] vernacular command in Coq.
+	This tutorial is about the powerful [Search] vernacular command in Rocq.
 	The [Search] command prints names and types of constants in the local or
 	global context satisfying a number of criteria.
 
@@ -25,14 +25,14 @@
     *** Prerequisites
 
     Needed:
-    - For the first part, it suffices to have some basic experience of Coq: the
-      user should know intuitively what is a Coq function and a Coq lemma or
+    - For the first part, it suffices to have some basic experience of Rocq: the
+      user should know intuitively what is a Rocq function and a Rocq lemma or
       theorem. Scope notations are mentioned briefly but this should not be too
       much of an issue.
-    - For the 2.3 part, some basic experience of Coq modules should be enough.
+    - For the 2.3 part, some basic experience of Rocq modules should be enough.
 
     Installation:
-    This [Search] tutorial should work for Coq V8.16 or later.
+    This [Search] tutorial should work for Rocq V8.16 or later.
 
     *** Warning
 
@@ -43,11 +43,11 @@
 (** In this tutorial, we are going to search for lemmas, mostly about natural
     numbers.
 
-    We already have all lemmas and definitions from the prelude ([Coq.Init]),
-    and we require the library file [Coq.Arith.PeanoNat] which adds hundreds
+    We already have all lemmas and definitions from the prelude ([Rocq.Init]),
+    and we require the library file [Stdlib.Arith.PeanoNat] which adds hundreds
     of new constants. *)
 
-From Coq Require Import PeanoNat.
+From Stdlib Require Import PeanoNat.
 
 (** ** 1. Searching for lemmas *)
 
@@ -130,7 +130,7 @@ Compute Nat.odd 42.
     It may be confusing that such names do not even appear in the output. *)
 Search Nat.add Nat.mul Nat.div.
 
-(** Indeed, Coq uses notations to display such results, and these are exactly
+(** Indeed, Rocq uses notations to display such results, and these are exactly
     what the user may expect. In fact, we often forget the names of operations
     such as [Nat.add].
 
@@ -145,7 +145,7 @@ Search (_ + _) (_ * _) (_ / _).
 Search "+" "*" "/".
 
 (** If we're interested in the name of the function or predicate associated to
-    a given notation, we can use the [Locate] command which shows how Coq
+    a given notation, we can use the [Locate] command which shows how Rocq
     currently interprets a given notation: *)
 Locate "_ + _".
 
@@ -155,7 +155,7 @@ Locate "_ + _".
     fine if you don't know what this means, our only concern here is that it
     exists.
 
-    Now, how does Coq choose between them? What is the current interpretation
+    Now, how does Rocq choose between them? What is the current interpretation
     of ["+"]?. *)
 
 Check 2 + 3. (* this looks ok with natural numbers *)
@@ -168,7 +168,7 @@ Fail Check nat + bool. (* this fails with types *)
     Another way to get this information is to use the [About] command: *)
 About "_ + _".
 
-(** We have seen that Coq allows to use the same notation in different context.
+(** We have seen that Rocq allows to use the same notation in different context.
     In fact, there are many other uses of "+" in the standard library, it could
     be the addition between rational numbers, real numbers, ...
 
@@ -362,9 +362,9 @@ Search "||".
 Search "+".
 
 (** So, what really happens here?
-    First, Coq makes a different between identifier (name) characters and
+    First, Rocq makes a different between identifier (name) characters and
     other characters.
-    The characters '|' and '+' cannot be used in constant names, so Coq guesses
+    The characters '|' and '+' cannot be used in constant names, so Rocq guesses
     it should interpret "||" and "+" as notations to appear in the types, not as
     substrings of names.
 
@@ -425,13 +425,13 @@ Search "+" outside Nat.
     System. Actually, there are two modules named [Nat] in our environment. *)
 
 (** The first to appear is the last to be [Require]d. In our case, its full
-    name is [Coq.Arith.PeanoNat.Nat]: *)
+    name is [Stdlib.Arith.PeanoNat.Nat]: *)
 About Nat.
 Print Module Nat.
 
 (** But this [Nat] module shadows the [Nat] module which already exists in
-    [Init] (actually, as a side note, the [Coq.Init.Nat] module is [Include]d
-    in [Coq.Arith.PeanoNat.Nat], but this is not relevant in this tutorial). *)
+    [Init] (actually, as a side note, the [Rocq.Init.Nat] module is [Include]d
+    in [Stdlib.Arith.PeanoNat.Nat], but this is not relevant in this tutorial). *)
 
 (** If one wants to [Search] for all lemmas in the [Nat] module taken from
     [Init], it suffices to qualify it more to disambiguate it: *)
