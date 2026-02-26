@@ -588,7 +588,12 @@ Qed.
     - enable the other content: notations, tactic notations, hints, coercions
       and canonical
 
-    Selective import lets us precisely choose what we want to import. *)
+    Selective import lets us precisely choose what we want to import.
+
+    However, note, that due to an implementation bug selective import of hints
+    fails in Rocq 9.0 and Rocq 9.1.
+
+*)
 
 (** To illustrate this, we create a hint database: *)
 Create HintDb req_tut.
@@ -610,7 +615,7 @@ Module Baz.
   (* A hint (please _do not_ pay attention to the [#[export]] locality
      attribute, it is here for compatibility reasons and will be discussed
      in the next section) *)
-  #[export] Hint Rewrite b_rel : req_tut.
+  #[local] Hint Rewrite b_rel : req_tut.
 End Baz.
 
 (** Let us import our notations first: *)
@@ -622,14 +627,18 @@ Fail Check b.
 Fail Check almost_b.
 Fail Check b_rel.
 Fail Compute (0%Z + 3). (* Our coercion is not there. *)
-Print HintDb req_tut. (* Our hint database is sadly empty. *)
+Fail Print Rewrite HintDb req_tut. (* Neither hints *)
 
-(** Let us now import our coercions and hints with one command: *)
+(** Let us now import our coercions and try to import hints with one command: *)
 Import (coercions, hints) Baz.
+
+(* As we can see coercions have been imported properly *)
 Compute (0%Z + 3).
-Print HintDb req_tut. (* Our hint is available *)
+
+(* However the hint was not imported due to a bug in Rocq 9.0 and 9.1 *)
+Fail Print Rewrite HintDb req_tut. (* Our hint is still not available *)
 Lemma b_42 : Baz.b = 42.
-Proof. autorewrite with req_tut. unfold Baz.almost_b. Baz.rfl. Qed.
+Proof. Fail autorewrite with req_tut. Admitted.
 
 (** Our notation is still there: *)
 Compute 1 !!.
@@ -779,7 +788,7 @@ Fail Compute (True + 2).
 
 (** The [#[export]] attribute is not as well supported as [#[local]].
     In fact, in a module, since Coq 8.18, it is either not supported, or the
-    default behavior (make a feature or short name available only when 
+    default behavior (make a feature or short name available only when
     a module is [Import]ed), except when used with the [Set] command which is
     used to change some Coq options.
 
@@ -799,7 +808,7 @@ Import NotExported.
 
 Lemma add_ones_r (n : nat) : n + 1 + 1 + 1 = S (S (S n)).
 Proof.
-  autorewrite with req_tut. (* This did _nothing_. *)
+  Fail progress (autorewrite with req_tut). (* This fails *)
   rewrite 3!Nat.add_1_r.
   reflexivity.
 Qed.
@@ -818,7 +827,7 @@ Import Exported.
 
 Lemma add_ones_r' (n : nat) : n + 1 + 1 + 1 = S (S (S n)).
 Proof.
-  autorewrite with req_tut.
+  autorewrite with req_tut. (* It now works since the hint is exported *)
   reflexivity.
 Qed.
 

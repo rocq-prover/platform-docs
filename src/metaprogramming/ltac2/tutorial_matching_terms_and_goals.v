@@ -18,7 +18,7 @@
   - 1. Matching Terms
     - 1.1 Basics
     - 1.2 Non-Linear Matching
-  - 2Matching Goals
+  - 2. Matching Goals
     - 1.1 Basics
     - 1.2 Non-Linear Matching
   - 3. Backtracking and [lazy_match!], [match!], [multi_match!]
