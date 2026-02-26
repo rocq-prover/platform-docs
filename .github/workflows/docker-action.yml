@@ -16,11 +16,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: coq-community/docker-coq-action@v1
         with:
-          opam_file: 'coq-platform-docs.opam'
-          coq_version: '9.0.1'
+          opam_file: 'rocq-platform-docs.opam'
+          rocq_version: '9.0.1'
           before_script: |
             startGroup "Workaround permission issue"
-              sudo chown -R coq:coq .  # <--
+              sudo chown -R rocq:rocq .  # <--
             endGroup
             startGroup "Install APT dependencies"
               cat /etc/os-release  # Print the Debian OS version
