@@ -14,13 +14,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: rocq-community/docker-rocq-action@v1
+      - uses: rocq-community/docker-coq-action@v1
         with:
           opam_file: 'rocq-platform-docs.opam'
-          rocq_version: '9.0.1'
+          coq_version: '9.0.1'
           before_script: |
             startGroup "Workaround permission issue"
-              sudo chown -R rocq:rocq .  # <--
+              sudo chown -R coq:coq .  # <--
             endGroup
             startGroup "Install APT dependencies"
               cat /etc/os-release  # Print the Debian OS version
