@@ -13,28 +13,30 @@
 [zulip-shield]: https://img.shields.io/badge/chat-on%20Zulip-blue
 [zulip-link]: https://coq.zulipchat.com/#narrow/stream/437203-Platform-docs
 
-The documentation is working with the latesest version of [Coq Platform](https://github.com/coq/platform/blob/main/doc/README~8.19~2024.10.md), i.e [8.19.2].
-It is planned in the future to index the documentation and the Coq Platform's version and to have a dev version of it, 
-so that users can find docmentation working for their version of the Coq and the Platform.
-It is not the case as of yet, so the documentation it is not guaranteed to work perfectly on other versions of Coq and the Platform, 
-though most of the content should still be working fine.
+The documentation is working with the latesest version of the Rocq Platform.
+It is planned in the future to index the documentation and the Rocq Platform's
+version and to have a dev version of it, so that users can find docmentation
+working for their version of the Rocq and the Platform.
+It is not the case as of yet, so the documentation it is not guaranteed to work
+perfectly on other versions of Rocq and the Platform, though most of the content
+should still be working fine.
 
-## A Collection of Short Interactive Tutorials and How-To Guides for Coq
+## A Collection of Short Interactive Tutorials and How-To Guides for Rocq
 
-This project aims to create an online compilation of short and interactive tutorials and how-to guides for Coq and the Coq Platform.
+This project aims to create an online compilation of short and interactive tutorials and how-to guides for Rocq and the Rocq Platform.
 
-Each core functionality and plugin of Coq and the Coq Platform should have (short) pedagogical tutorials and/or
+Each core functionality and plugin of Rocq and the Rocq Platform should have (short) pedagogical tutorials and/or
 how-to guides demonstrating how to use the functionality, with practical examples.
 They should further be available online through an interactive interface, most likely using JSCoq.
 There is now a prototype [web interface](https://coq.inria.fr/platform-docs/) to check out.
 
 Tutorials and how-to guides serve different purposes and are complementary.
-Tutorials guide a user during learning in discovering specific aspects of a feature like "Notations in Coq",
+Tutorials guide a user during learning in discovering specific aspects of a feature like "Notations in Rocq",
 by going through (simple) predetermined examples, and introducing notions gradually.
 In contrast, how-to guides are use-case-oriented and guides users through real life problems and their inherent complexity,
 like "How to define functions by well-founded recursion and reason about them".
 
-For a complete description of the project, you can check out the associated [Coq Enhancement Proposal](https://github.com/coq/ceps/pull/91).
+For a complete description of the project, you can check out the associated [Rocq Enhancement Proposal](https://github.com/coq/ceps/pull/91).
 
 > [!TIP]
 > To gain useful insights about what documentation should be, we recommend
@@ -67,7 +69,7 @@ For a complete description of the project, you can check out the associated [Coq
   Actually, writing tutorials [for Equations](https://github.com/Zimmi48/platform-docs/pull/1#issuecomment-2098810034)
   as already revealed that one of the main features had an unwanted behavior and a bug.
 - Most math users are currently unaware of the extent of what has been
-  formalised and is available in Coq.
+  formalised and is available in Rocq.
   There are many libraries, and it is not easy to know which library to use, or
   to know on which axioms they rely or their compatibilities.
   This is obviously not just a documentation issue, but having a clearer
@@ -85,7 +87,7 @@ Such form of documentation is complementary to other kinds of documentation like
   - make it possible to build gradually, making new tutorials and how-tos available as we progress
   - allow differentiated learning: depending on your background or objective you can navigate the
     documentation differently, potentially reading different tutorials.
-- It will enable us to showcase all that is possible in Coq's ecosystem
+- It will enable us to showcase all that is possible in Rocq's ecosystem
 - It should be easy to maintain as once fully written a tutorial or how-to should have any reason to change,
   except if the associated feature or known best practices change.
 
@@ -100,7 +102,7 @@ of tutorials and how-tos it could be interesting to have.
 This list is not fixed and will necessarily evolve through discussions with the community and experience,
 but it should already give an idea of the potential of this project.
 
-We will also soon submit a Coq Enhancement Proposal.
+We will also soon submit a Rocq Enhancement Proposal.
 
 > [!NOTE]
 > For more information about project and to participate in disccusions, please checkout on the dedicated [Zulip stream](https://coq.zulipchat.com/#narrow/stream/437203-Platform-docs).
@@ -112,12 +114,12 @@ We will also soon submit a Coq Enhancement Proposal.
 
 ### How to contribute to the documentation
 
-There is a lot of work to be done before having a comprehensive documentation for Coq and its Platform, and we welcome contributions.
+There is a lot of work to be done before having a comprehensive documentation for Rocq and its Platform, and we welcome contributions.
 
 There are different possible ways to contribute depending on your time and technical skills:
 - As user, do not hesitate to gives us feedback on the project on the dedicated [Zulip stream](https://coq.zulipchat.com/#narrow/stream/437203-Platform-docs)
 - There is need for regular reviewers to test tutorials, both general ones and expert ones
-- There is a lot of tutorials and how-tos to write, both about Coq and plugins in its Platform
+- There is a lot of tutorials and how-tos to write, both about Rocq and plugins in its Platform
 - There is technical work to be done on the (interactive) web interface side
 
 > [!IMPORTANT]
@@ -125,7 +127,7 @@ There are different possible ways to contribute depending on your time and techn
 
 ### License
 
-The Coq Platform Docs (in particular, all the text in tutorials and how-to guides) by *The Coq Platform Docs authors* are licensed under Creative Commons Attribution 4.0 International.
+The Rocq Platform Docs (in particular, all the text in tutorials and how-to guides) by *The Rocq Platform Docs authors* are licensed under Creative Commons Attribution 4.0 International.
 > [!NOTE]
 > Code snippets from tutorials and how-to guides can be reused unencumbered.
 
