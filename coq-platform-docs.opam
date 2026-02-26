@@ -24,7 +24,7 @@ install: [make "install"]
 depends: [
   "coq" 
   "coq-equations" 
-  "coq-hierarchy-builder" 
+  "coq-hierarchy-builder"  {= "1.9.1" }
 ]
 
 tags: [
