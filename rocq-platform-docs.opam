@@ -22,7 +22,7 @@ Tutorials and how-to guides serve different purposes and are complementary. Tuto
 build: [make "-j%{jobs}%"]
 install: [make "install"]
 depends: [
-  "rocq"
+  "rocq-prover"
   "rocq-equations"
   "coq-hierarchy-builder"  {= "1.10.2" }
 ]
