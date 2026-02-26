@@ -157,8 +157,9 @@ Ltac2 absurd () :=
   end.
 
 (** As an important technical point, note it is not possible to directly write
-    [$(Control.hyp h)]. It is only possible to unquote variables.
-    The reason is that ???
+    [$(Control.hyp h)] or variation of that. It is only possible to unquote variables.
+    The reason is that functions like [Control.hyp] needs a goal, where [$] does not.
+    You hence need a [ltac2:()] wrapper, c.f. section 3.
 *)
 
 (** ['] is an notation for [open_constr:]. The name [open_constr] comes
@@ -171,7 +172,7 @@ Ltac2 absurd () :=
     We can do so by:
     1. Recovering the type [?a] by matching the type of the hypothesis
     2. Creating a new existential variables with [(_ :> $a)],
-    3. Quoting it [let e := '(_ :> $a)] to get a Ltac2 expression we can manipulate
+    3. Quoting it [let e := '(_ :> $a)] to get a Ltac2 expression [e] we can manipulate
     4. Specialize the hypothesis [h] with [specialize ($h $e)]
     5. Following these steps, the existential variable is shelved.
        Therefore, to create a goal [A], we wrap the expression in [unshelve].
@@ -221,8 +222,7 @@ Fail Ltac2 Eval constr:(_).
 
     As you may have noticed, the error message above is referring to instances:
     "Could not find an instance for the following existential variables: ?y : ?T".
-    The reasons is that to solve existential variables, unlike [open_constr:],
-    [constr:] runs typeclass inference.
+    The reasons is that unlike [open_constr:], [constr:] runs typeclass inference.
 
     Another difference is that [constr:(...)] substitutes all defined evars by
     their bodies in the returned term. Because defined evars are
@@ -459,6 +459,7 @@ Ltac2 Notation "##" x(preterm) := Constr.pretype x.
 (** ** 5. Ltac1 and Ltac2
 
     We can embed a Ltac1 expression into Ltac2 using [ltac1:(...)].
+    This can be practical, for instance, for transitioning from Ltac1 to Ltac2.
     The resulting Ltac2 expression has type [unit], and evaluating it
     runs the Ltac1 tactic: *)
 Ltac2 Eval ltac1:(idtac "hello from Ltac1").
@@ -475,20 +476,6 @@ Ltac2 Eval ltac1:(x y |- idtac y) (Ltac1.of_constr '42) (Ltac1.of_ident @xx).
 (** (note that in Ltac1 printing terms automatically focuses on each
     current goal, so it produces no output when there are no goals:) *)
 Ltac2 Eval ltac1:(x y |- idtac x y) (Ltac1.of_constr '42) (Ltac1.of_ident @xx).
-
-(** We can also produce values of type [Ltac1.t] by quoting Ltac1
-    expressions with [ltac1val:(...)] (which supports the same
-    [ltac1val:(v1 .. vn |- ...)] syntax to quantify over variables): *)
-Ltac2 Eval ltac1val:(let x := constr:(42) in x).
-
-(** Such values can be cast to Ltac2 types using the APIs in module
-    [Ltac2.Ltac1]. Since Ltac1 is dynamically typed such casts can
-    fail (returning None).
-
-    Ltac1 semantics of returning values are way beyond the scope of
-    this tutorial, and for instance the following ltac1val is NOT a
-    constr and the cast returns [None]: *)
-Ltac2 Eval Ltac1.to_constr ltac1val:(let x := constr:(42) in x).
 
 (** We can also embed Ltac2 inside Ltac1 using [ltac2:(...)] which
     runs the Ltac2 tactic when evaluated: *)
