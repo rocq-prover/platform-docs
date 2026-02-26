@@ -3,14 +3,14 @@
     *** Summary
 
     This tutorial is about how to get the most out of library files, that is
-    Coq files containing definitions, lemmas, notations, ...
+    Rocq files containing definitions, lemmas, notations, ...
 
-    Coq Library files are modules, which may themselves contain (non-file) inner
+    Rocq Library files are modules, which may themselves contain (non-file) inner
     modules. In order to reuse the content of a file, one has to [Require] it
-    first. We will first see how these library files are identified by Coq and
+    first. We will first see how these library files are identified by Rocq and
     how to [Require] them in practice.
 
-    Coq Modules provide, among other things, namespace facilities as well as
+    Rocq Modules provide, among other things, namespace facilities as well as
     some form of locality. We will see how to identify the constants
     (definitions, lemmas, ...) contained in a module with a (more or less)
     qualified name such as [Bool.andb_true_l]. In order to use an unqualified
@@ -29,8 +29,8 @@
 
     The second and third part of this tutorial are (almost) independent.
 
-    These topics are often skipped from lectures or courses about Coq
-    because they are mostly technical and somewhat boring. However, any Coq
+    These topics are often skipped from lectures or courses about Rocq
+    because they are mostly technical and somewhat boring. However, any Rocq
     user needs to learn (usually the hard way) this content before writing their
     own libraries.
 
@@ -50,35 +50,34 @@
     *** Prerequisites
 
     Needed:
-    - The user should already have some basic Coq experience: writing
+    - The user should already have some basic Rocq experience: writing
       definitions, lemmas, proofs...
-    - Some parts deal with more advanced Coq content (user-defined tactics,
+    - Some parts deal with more advanced Rocq content (user-defined tactics,
       notations, coercions...); having some basic knowledge about it is better
-      to appreciate what Coq can offer, but is not really needed.
+      to appreciate what Rocq can offer, but is not really needed.
 
     Installation:
-    This tutorial should work for Coq V8.17 or later.
+    This tutorial should work for Rocq V8.17 or later.
 *)
 
 (** ** 1. Library files, modules and identifiers *)
 
 (** *** 1.1 The [Require] command and fully qualified names *)
 
-(** Coq's basic compilation unit is the _library file_. Each compiled file can
+(** Rocq's basic compilation unit is the _library file_. Each compiled file can
     be [Require]d in order to make its logical and computational content
     available in the current file.
 
-    If not stated otherwise (with the [-noinit] command-line flag), Coq's
+    If not stated otherwise (with the [-noinit] command-line flag), Rocq's
     initial state is populated by a dozen library files called the [Prelude]
-    (the interested reader can consult its
-    #<a href="https://github.com/coq/coq/blob/master/theories/Init/Prelude.v">source code</a>#).
+    or [Corelib].
 
     We can see these files with the [Print Libraries] command: *)
 Print Libraries.
 
 (** As we can see, these files share a common logical prefix made of:
-    - [Coq]: the library prefix used by the standard library
-    - [Init]: the subdirectory of the root directory of Coq's standard library
+    - [Corelib]: the library prefix used by the core library
+    - [Init]: the subdirectory of the root directory of Rocq's core library
       where these library files are located
 
     This means that the [Init] directory contains the (compiled) files
@@ -86,24 +85,22 @@ Print Libraries.
     content, for instance the commutativity of the disjunction: *)
 Check or_comm.
 
-(** Let's require another small library file. *)
-From Coq Require Bool.Bool.
+(** Let's require a small library file from the standard library *)
+From Stdlib Require Bool.Bool.
 
-(** The previous command told [Coq] to load all logical and computational
-    content in the file [Bool.vo] contained in the directory [Bool] of the root
-    directory of Coq's standard library (the interested reader can browse its
-    current
-    #<a href="https://github.com/coq/coq/blob/master/theories/Bool/Bool.v">source code</a>#).
+(** The previous command told [Rocq] to load all logical and computational
+    content in the file [Bool.vo] contained in the directory [Bool] of the
+    standard library.
 *)
 
 (** Now let's see how our list of libraries has evolved: *)
 Print Libraries.
 
 (** As we can see, we have not one but two more library files.
-    The [Coq.Classes.DecidableClass] is itself required in [Coq.Bool.Bool].
+    The [Stdlib.Classes.DecidableClass] is itself required in [Stdlib.Bool.Bool].
 
     Now there are two very important message here:
-    1. When we [Require] a file, we [Require] recursively any file it has
+    1. When we [Require] a file, we [Require] transitively any file it has
        [Require]d (and any file [Require]d in the [Require]d files, and so on).
     2. There is **no way** to "unrequire" anything. Once a file has been
        required, its content will remain in the global environment of the user
@@ -112,13 +109,13 @@ Print Libraries.
 
     As a consequence, one should be careful of what one [Require]s. *)
 
-(** Now that we have required [Coq.Bool.Bool], we have many more lemmas about
+(** Now that we have required [Stdlib.Bool.Bool], we have many more lemmas about
     boolean operations. *)
 Search andb true.
 
 (** Some of them are _qualified_ with the [Bool.] prefix, these come from
-    [Coq.Bool.Bool]. Others have short names, these come from one of the
-    [Coq.Init] files.
+    [Stdlib.Bool.Bool]. Others have short names, these come from one of the
+    [Rocq.Init] files.
 
     Using the [About] command gives us their locations. *)
 About andb_prop.
@@ -126,14 +123,14 @@ About andb_prop.
 (** Now let's take a look at [Bool.andb_true_l] *)
 About Bool.andb_true_l.
 
-(** We see that it expands to [Coq.Bool.Bool.andb_true_l]. This is the internal
-    name Coq uses to distinguish it from any other constant.
+(** We see that it expands to [Stdlib.Bool.Bool.andb_true_l]. This is the internal
+    name Rocq uses to distinguish it from any other constant.
     We call it an _absolutely qualified identifier_ or _fully qualified
     identifier_.
 
     This is a technical but important notion, so we should take some time to
     describe this identifier. There are several parts separated by dots.
-    - The first part is Coq: it is the _logical name_ of the library. Other
+    - The first part is Stdlib: it is the _logical name_ of the library. Other
       mechanisms (for instance a [_CoqProject] file, or [-R] and [-Q] options
       for [coqc], locations which are known by [coqc], such as the output of
       [coqc -where], ...) associate a logical name to a physical directory
@@ -142,8 +139,8 @@ About Bool.andb_true_l.
       the root of the library) containing the identifier in the given library,
       in our case, on a Unix family system, it corresponds to [Bool/Bool.vo].
 
-    Now, at this point, [Coq.Bool.Bool] is the last required library file
-    called [Bool] containing a constant named [andb_true_l], so Coq accepts
+    Now, at this point, [Stdlib.Bool.Bool] is the last required library file
+    called [Bool] containing a constant named [andb_true_l], so Rocq accepts
     (and prints) as a shorter _partially qualified_ the identifier
     [Bool.andb_true_l].
 
@@ -151,15 +148,15 @@ About Bool.andb_true_l.
     [Bool.Bool.andb_true_l].
 
     All these identifiers refer to the same constant: *)
-About Coq.Bool.Bool.andb_true_l.
+About Stdlib.Bool.Bool.andb_true_l.
 About Bool.Bool.andb_true_l.
 About Bool.andb_true_l.
 
-(** However, at this point Coq does not accept the unqualified [andb_true_l] as
+(** However, at this point Rocq does not accept the unqualified [andb_true_l] as
     a valid identifier: *)
 Fail Check andb_true_l.
 
-(** Coq does not allow us to use this _short name_ automatically because it
+(** Rocq does not allow us to use this _short name_ automatically because it
     risks to silently shadow another constant with the same short name. *)
 
 (** The [Locate] command shows all constants associated to an unqualified
@@ -174,7 +171,7 @@ Import Bool.
 (** Now we can refer to the constants in [Bool] with their short names. *)
 Check andb_true_l.
 
-(** Coq will also display short names in its messages: *)
+(** Rocq will also display short names in its messages: *)
 Search andb true.
 Search andb true inside Bool.
 
@@ -184,21 +181,21 @@ Locate Bool.
 
 (** But we can refer to the [Bool] with a more qualified name too: *)
 About Bool.Bool.
-About Coq.Bool.Bool.
+About Stdlib.Bool.Bool.
 
 (** In fact, most users prefer short names to fully qualified names so, in
     practice, one usually [Require]s and [Import]s a file at the same time.
     This is done, for instance, with the syntax:
-    [From Coq Require Import Bool.Bool.]
+    [From Stdlib Require Import Bool.Bool.]
 
     In passing, there are many more possibilities to [Require] (with or with
     [Import]) a library file.
-    The fully qualified name of this file is [Coq.Bool.Bool], and one can
+    The fully qualified name of this file is [Stdlib.Bool.Bool], and one can
     factor any prefix in the [From] part of the command, so the following
     command achieves the same goal:
-    [From Coq.Bool Require Import Bool.]
+    [From Stdlib.Bool Require Import Bool.]
     or, with an empty [From] part:
-    [Require Import Coq.Bool.Bool.]
+    [Require Import Stdlib.Bool.Bool.]
 
     In fact, the [From] part is mostly a convenience to require multiple parts
     from a common library or sublibrary. For instance, if one uses the mathcomp
@@ -208,8 +205,8 @@ About Coq.Bool.Bool.
 
     If there is no confusion, it is even possible to omit the directory (or
     directories) part. In our case there is only one file [Bool.vo] in all
-    Coq's standard library, so we could also have used
-    [From Coq Require Import Bool.]
+    Rocq's standard library, so we could also have used
+    [From Stdlib Require Import Bool.]
 
     What to choose is then mostly a matter of taste (and clearly depends on the
     number of files in the library). *)
@@ -269,10 +266,10 @@ Qed.
     _library files are modules_.
 
     This is the most important fact to take home from this tutorial, and the
-    main reason to study a part of Coq's module system.
+    main reason to study a part of Rocq's module system.
 
     We can even print the content of library files, viewed as modules: *)
-Print Module Coq.Bool.Bool.
+Print Module Stdlib.Bool.Bool.
 
 (** [Import] is actually a module command, so we can: *)
 Import Foo.
@@ -291,7 +288,7 @@ Check bar.
 (** When we [Import]ed our [Foo] module before, there was no possible name
     clash since no constant in our context were named [foo], [bar] or [baz].
 
-    In real life Coq, however, global contexts can be huge and there will
+    In real life Rocq, however, global contexts can be huge and there will
     be name clashes.
 
     So, what happens if we define and import the following module? *)
@@ -300,7 +297,7 @@ Module OtherFoo.
 End OtherFoo.
 
 Import OtherFoo.
-(** First, Coq emits no error or warning, so this is a legit operation.
+(** First, Rocq emits no error or warning, so this is a legit operation.
     What is [foo] now? *)
 Print foo.
 About foo.
@@ -316,7 +313,7 @@ About Foo.foo.
 Locate foo.
 
 (** The first item in the list is our [OtherFoo.foo] constant, it is available
-    by its short name. Next is [Foo.foo] and Coq gives us the shortest partially
+    by its short name. Next is [Foo.foo] and Rocq gives us the shortest partially
     qualified name to refer to it.
 
     What happens if we now [Import Foo] again? *)
@@ -339,11 +336,11 @@ Print Foo.foo.
 Print OtherFoo.foo.
 
 (** Now, for a real life example, let us consider the library files
-    [Coq.Arith.PeanoNat] and [Coq.ZArith.BinInt] which contain the bulk
-    of Coq's standard library content for, respectively Peano natural numbers
+    [Stdlib.Arith.PeanoNat] and [Stdlib.ZArith.BinInt] which contain the bulk
+    of Rocq's standard library content for, respectively Peano natural numbers
     and (binary) integers. *)
 
-From Coq Require Import Arith.PeanoNat ZArith.BinInt.
+From Stdlib Require Import Arith.PeanoNat ZArith.BinInt.
 
 (** Most of the results and operations are actually contained in the interactive
     (inner) modules [PeanoNat.Nat] and [BinInt.Z]. These inner modules are not
@@ -377,12 +374,12 @@ About add_0_r.
 (** What happens if module names themselves clash?
     We actually are already in that case: *)
 About Nat.
-About Coq.Init.Nat.
+About Corelib.Init.Nat.
 
 (** We have one module named [Nat] in [PeanoNat] and another one in the form
     of a library file in the [Init] directory.
-    The name of the module [Coq.Init.Nat] was shadowed when we
-    [Import]ed the module [Coq.Arith.PeanoNat].
+    The name of the module [Corelib.Init.Nat] was shadowed when we
+    [Import]ed the module [Corelib.Arith.PeanoNat].
 
     As we have just seen, it suffices to qualify more the module which is
     shadowed if we want to explicitly refer to it. *)
@@ -432,7 +429,7 @@ Print ABC.bob.
 Print ABC.charlie.
 
 (** As we see, [ABC.alice] from [NestedABC1] has now been shadowed by
-    [ABC.alice] in [NestedABC2]. Other than that, Coq is perfectly fine with
+    [ABC.alice] in [NestedABC2]. Other than that, Rocq is perfectly fine with
     [ABC.bob], which means that the [ABC] prefix in these three identifiers
     can actually refer to different modules.
 
@@ -458,7 +455,7 @@ Print charlie.
 Locate alice.
 Print NestedABC1.ABC.alice.
 
-(** To conclude this part, let us sum up what Coq allows and disallows regarding
+(** To conclude this part, let us sum up what Rocq allows and disallows regarding
     identifiers:
     - it is possible to have two files with the same name as long as they are
       in different directories;
@@ -662,7 +659,7 @@ Print add_two.
 Fail Print rfl.
 Print Baz.rfl.
 
-(** There is also a way to tell Coq: [Import] everything except these
+(** There is also a way to tell Rocq: [Import] everything except these
     categories. We just need to prepend them with a minus sign: *)
 Module OtherBaz.
   Definition other_b := 42.
@@ -748,7 +745,7 @@ Check UnaryZ_ind.
     There are 3 locality attributes: [#[local]], [#[export]] and [[#global]].
 
     The availability and effect of these attribute depends on each command (and
-    even which Coq version we use) but, in short, when supported:
+    even which Rocq version we use) but, in short, when supported:
     - the [#[local]] attribute makes some content unavailable for import
     - the [#[export]] attribute makes some content available only if the module
       is [Import]ed
@@ -787,16 +784,16 @@ Fail Compute (True + 2).
     implementation details. *)
 
 (** The [#[export]] attribute is not as well supported as [#[local]].
-    In fact, in a module, since Coq 8.18, it is either not supported, or the
+    In fact, in a module, since Rocq 8.18, it is either not supported, or the
     default behavior (make a feature or short name available only when
     a module is [Import]ed), except when used with the [Set] command which is
-    used to change some Coq options.
+    used to change some Rocq options.
 
-    Prior to Coq 8.18, if one wants Hints to be available if (and only if) the
+    Prior to Rocq 8.18, if one wants Hints to be available if (and only if) the
     module is [Import]ed, they should have the [#[export]] attribute and in
-    Coq 8.17, Coq will emit a fatal warning they do not have any attribute.
+    Rocq 8.17, Rocq will emit a fatal warning they do not have any attribute.
 
-    The following example shows what to expect (in any recent Coq version)
+    The following example shows what to expect (in any recent Rocq version)
     when a Hint is kept local and a [Set] command has no attribute: *)
 Module NotExported.
   Set Universe Polymorphism.
@@ -836,7 +833,7 @@ Test Universe Polymorphism.
 (** As we saw, the [#[export]] locality attribute allowed us to [Set] our
     option whenever the module is [Import]ed.
 
-    For our hint, [#[export]] is the default attribute since Coq 8.18, but if
+    For our hint, [#[export]] is the default attribute since Rocq 8.18, but if
     you need to work with older versions, you should add it to your Hints,
     if you want them to be available after import. *)
 
@@ -958,8 +955,8 @@ Check this_is_b'.
 
     Finally, it is possible to [Require] and [Export] a library file at the
     same time.
-    For instance, the following command in [Coq.Arith.Arith_base]:
-    [From Coq Require Export Arith.PeanoNat.]
-    imports [PeanoNat]'s content in [Coq.Arith.Arith_base] as well as in any
-    file which [Require]s and [Import]s (or [Export]s) [Coq.Arith.Arith_base].
+    For instance, the following command in [Stdlib.Arith.Arith_base]:
+    [From Stdlib Require Export Arith.PeanoNat.]
+    imports [PeanoNat]'s content in [Stdlib.Arith.Arith_base] as well as in any
+    file which [Require]s and [Import]s (or [Export]s) [Stdlib.Arith.Arith_base].
 *)
