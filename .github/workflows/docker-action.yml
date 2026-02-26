@@ -20,7 +20,7 @@ jobs:
           coq_version: '9.0.1'
           before_script: |
             startGroup "Workaround permission issue"
-              sudo chown -R coq:coq .  # <--
+              sudo chown -R rocq:rocq .  # <--
             endGroup
             startGroup "Install APT dependencies"
               cat /etc/os-release  # Print the Debian OS version
