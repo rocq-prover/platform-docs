@@ -15,7 +15,7 @@
       - 1. Names (ident / @, reference)
       - 2. Quoting: Using Rocq's Terms in Ltac2
         - 2.1 Quoting Terms
-        - 2.2 Quoting Terms Without Existantial Variables
+        - 2.2 Quoting Terms Without Existential Variables
         - 2.3 Preterms : Internalize without Typechecking
       - 3. Ltac2 in terms
       - 4. Quotations as Ltac2 notations
@@ -107,14 +107,14 @@ Ltac2 Eval '(forall n, n + 0 = n).
 
   2. When the Ltac2 expression is evaluated, the internalization of [t]
      is typechecked in the current context, returning the elaborated term.
-     See "internalization" through the glossary index in the reference manual.
+     See " type inference" through the glossary index in the reference manual.
 
-  Note that [open_constr:] does not run typeclass inference.
+  Note that ['] does not run typeclass inference.
 
-  For instance, trying to quote an undefinied variable returns an error:
+  For instance, trying to quote an undefined variable returns an error:
 *)
 
-Fail Ltac2 Eval '(x).
+Fail Ltac2 Eval 'x.
 
 (** Moreover, because typechecking a term requires a context (which contains the
     hypotheses), it throws an error if more than one goal is focused.
@@ -142,7 +142,7 @@ Section foo.
 
 End foo.
 
-(** The converse operation is "unquoting" which consit in turning a Ltac2
+(** The converse operation is "unquoting" which consists in turning a Ltac2
     [constr] into a Rocq term, and can be performed with [$].
 
     For instance, if we match the context for a proof of [h : False], we get the
@@ -162,7 +162,7 @@ Ltac2 absurd () :=
 *)
 
 (** ['] is an notation for [open_constr:]. The name [open_constr] comes
-    from the fact that quoted terms can includ existantial variables.
+    from the fact that quoted terms can include existential variables.
     This is very practical to write tactics.
 
     For instance, suppose, we have an hypothesis [forall x : A, B x] we want to specialize.
@@ -170,10 +170,10 @@ Ltac2 absurd () :=
 
     We can do so by:
     1. Recovering the type [?a] by matching the type of the hypothesis
-    2. Creating a new existantial variables with [(_ :> a)],
-    3. Quoting it [let e := '(_ :> ?a)] to get a Ltac2 expression we can manipulate
+    2. Creating a new existential variables with [(_ :> $a)],
+    3. Quoting it [let e := '(_ :> $a)] to get a Ltac2 expression we can manipulate
     4. Specialize the hypothesis [h] with [specialize ($h $e)]
-    5. Following these steps, the existential variables is shelved.
+    5. Following these steps, the existential variable is shelved.
        Therefore, to create a goal [A], we wrap the expression in [unshelve].
 
     Combined, this gives us the following small tactic:
@@ -207,7 +207,7 @@ Goal (forall n, n = 4) -> 5 = 4.
   - assumption.
 Qed.
 
-(** *** 2.2 Quoting Terms Without Existantial Variables
+(** *** 2.2 Quoting Terms Without Existential Variables
 
   It also possible to quote terms without allowing existential variables, using
   the quotation [constr:] instead of [open_constr:].
@@ -220,8 +220,8 @@ Fail Ltac2 Eval constr:(_).
     Try not to confuse the Ltac2 type [constr], and the quotation syntax [constr:(...)].
 
     As you may have noticed, the error message above is referring to instances:
-    "Could not find an instance for the following existential variables:?y : ?T".
-    The reasons is that to solve existantial variables, opposite to [open_constr:],
+    "Could not find an instance for the following existential variables: ?y : ?T".
+    The reasons is that to solve existential variables, unlike [open_constr:],
     [constr:] runs typeclass inference.
 
     Another difference is that [constr:(...)] substitutes all defined evars by
@@ -246,7 +246,7 @@ Time Ltac2 Eval nat_of_int (fun x => '(S $x)) 5000.
     machine, use a higher number if you have a faster machine). *)
 Time Ltac2 Eval nat_of_int (fun x => constr:(S $x)) 5000.
 
-(** You can play with th value of [n] to see the performance curve,
+(** You can play with the value of [n] to see the performance curve,
     for instance 10_000 should take twice the time with
     [open_constr:(...)] but four times with [constr:(...)]. *)
 
@@ -256,7 +256,7 @@ Time Ltac2 Eval nat_of_int (fun x => constr:(S $x)) 5000.
     In some case, we want to manipulate a Rocq term in Ltac2, but do not want
     to typecheck it as quoting does. Two main examples are:
     - we have more than one goal, and need to postpone typehecking to focus first
-    - because we want to do typechecking differently, e.g. with coercions disable
+    - because we want to do typechecking differently, e.g. with a particular expected type
 
     In other words, we want to internalize a term, but postpone typechecking,
     and trigger it by hand. This is possible, and corresponds to the Ltac2 type
@@ -267,8 +267,8 @@ Time Ltac2 Eval nat_of_int (fun x => constr:(S $x)) 5000.
 Ltac2 Eval preterm:(fun x : 0 => x).
 
 (** A preterm can then be turned into a value of type [constr] using
-      [Ltac2.Constr.pretype], which runs typechecking.
-      (or [Ltac2.Constr.Pretype.pretype] for more control *)
+      [Ltac2.Constr.pretype], which runs typechecking like the [constr:] quotation,
+      or [Ltac2.Constr.Pretype.pretype] for more control. *)
 Fail Ltac2 Eval Constr.pretype preterm:(fun x : 0 => x).
 Ltac2 Eval Constr.pretype preterm:(fun x => x + 0).
 
@@ -353,7 +353,7 @@ Check ltac2:(exact 0).
 
 (** The ltac2 expression is typechecked when the Gallina term is internalized.
     See "internalization" through the glossary index in the reference manual.
-    It should have type [unit], but other typesare tolerated (with a warning).
+    It should have type [unit], but other types are tolerated (with a warning).
 
    When the Gallina term is typechecked (see "type inference" through
    the glossary index in the reference manual), a new existential
@@ -367,7 +367,7 @@ Check ltac2:(exact 0).
 
    If there is no expected type (for instance in the above Check), a
    fresh type evar is also created in the same context to be the
-   conlusion.
+   conclusion.
 
    The term produced by the quotation is the evar, which is typically
    instantiated by the tactic (for instance by [0] in the above Check).
