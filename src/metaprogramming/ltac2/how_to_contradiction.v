@@ -6,8 +6,11 @@
   *** Summary
 
   This tutorial explains how to write a variant of the [contradiction] tactic using Ltac2.
-  In particular, it showcases how to use [match! goal] and choose among [lazy_match!]
-  or [match!] and shows how to use quoting, and the Constr and Ind API to check properties on inductive types.
+  In particular, it showcases:
+   - how to use [match! goal],
+   - how to choose among [lazy_match!] or [match!],
+   - how to use quoting, and
+   - the Constr and Ind API to check properties on inductive types.
 
   *** Table of content
 
@@ -22,8 +25,6 @@
   - 4. Putting it All Together
 
   *** Prerequisites
-
-  Disclaimer:
 
   Needed:
   - Basic knowledge of Ltac2
@@ -41,18 +42,22 @@ From Ltac2 Require Import Ltac2 Constr Printf.
     The overall specification of [contradiction] is that it can take an argument or not:
 
     If [contradiction] does not take an argument, then [contradiction]:
+
     1. First introduces all the variables,
+
     2. Tries to prove the goal by checking the hypotheses for:
       - A pair of hypotheses [p : P] and [np : ~P], such that any goal can be
         proven by [destruct (np p)]
-      - An hypothesis [x : T] where [T] is an inductive type without any constructor
+      - A hypothesis [x : T] where [T] is an inductive type without any constructor
         like [False], in which case [destruct x] solves the current goal
-      - An hypothesis [nx : ~T] such that [T] is an inductive type with
+      - A hypothesis [nx : ~T] such that [T] is an inductive type with
         one constructor without arguments, like [True] or [0 = 0];
         in other words, such that [T] is provable by [constructor 1].
 
     If [contradiction] takes an argument [t] then, the type of [t] must either be:
+
     1. An empty inductive type like [False], in which case the goal is proven
+
     2. Or a negation [~P], in which case:
         - If there is a hypothesis of type [P] in the context, then the goal is proven;
         - otherwise, the goal is replaced by [P].
@@ -65,44 +70,44 @@ From Ltac2 Require Import Ltac2 Constr Printf.
 
     *** 2.1 Choosing [lazy_match!], [match!] or [multi_match!]
 
-    To look up for a pair of hypotheses [P] and [~P], we need to match the goal.
-    There are three commands to match the goal that have different behaviour
-    regarding backtracking. The first step is to understand which one we want to use.
+    To look up for a pair of hypotheses [P] and [~P], we need to match against the goal.
+    There are three commands to match against the goal, with different behaviour
+    depending on how they backtrack in the presence of failures.
+    The first step is to understand which one we want to use.
 
-    - [lazy_match! goal with] picks a branch, and sticks to it to even if the code
-      executed after picking this branch (the body of the branch) leads to a failure.
-      In practice, it is sufficient for all applications where matching the syntax
+    - [lazy_match! goal with] picks a branch, and sticks to it to even if the
+      execution of the branch's body leads to a failure; there is no backtracking.
+      In practice, this alternative is sufficient for all applications where matching the syntax
       is enough and deterministic.
 
-    - [match! goal with] that picks the first branch that succeeds, but further backtracks
-      to its choice if the evaluation of its body fails to pick another matching branch,
-      potentially the same one if all the hypotheses have not been exhausted yet.
+    - [match! goal with] picks the first branch that matches and evaluates its body.
+      If the evaluation fails, then it backtracks and picks another matching branch.
+      It can potentially pick the same one if all of the hypotheses have not been exhausted yet.
       [match!] is useful as soon as matching the syntax is not enough, and we
       need additional tests to see if we have picked the good hypotheses or not.
 
-    - [multi_match! goal with] that behaves like [match!] except that it will
+    - [multi_match! goal with] behaves like [match!] except that it will
       further backtrack if its choice of a branch leads to a subsequent failure
       when linked with another tactic.
-      [multi_match!] is meant to write tactics performing a choice, and that
+      [multi_match!] is useful when writing tactics that perform a choice and that
       we want to link with other tactics, like the [constructor] tactic.
-      The [contradiction] tactics is meant to solve goals with a simple enough
-      inconsistent context. It is not meant to be linked with other tactics.
-      Consequently, we have no use for [multimatch!] to implement [contradiction].
 
-    Choosing betwen [lazy_match!] and [match!] really depends if we need
-    more than a syntax check as we will see in the rest of this how-to guide.
+    For this scenario, the [contradiction] tactic is meant to solve goals with a simple enough
+    inconsistent context. It is not meant to be linked with other tactics.
+    Consequently, we have no use for [multimatch!] to implement [contradiction].
+    Choosing betwen [lazy_match!] and [match!] really depends on whether we need
+    more than a syntactic checkr, as we will see in the rest of this document.
 *)
 
 
 (** *** 2.2 Matching Syntactically or Semantically *)
 
-(** Whether we choose to use [lazy_match!] or [match!], there are different
-    ways to match for [P] and [~P]. We can match the syntax directly, or match
-    it semantically that is up to some reduction, conversion or unification.
+(** There are different ways to match for [P] and [~P], depending on whether we choose to use [lazy_match!] or [match!].
+   We can match the syntax directly, or match it semantically, i.e., up to some reduction, conversion or unification.
 
-    This different options have different levels of expressiveness, allowing them
-    to match hypotheses to varying degrees. They also have different cost and side
-    effects, for instance, conversion does not unify evariables opposite to unify.
+    These options have different levels of expressiveness, allowing them
+    to match hypotheses to varying degrees of precision. They also have different costs and side
+    effects, for instance, conversion does not unify existential variables (evars), contrary to unification.
 
     Understanding which strategy to choose is not easy. We will now discuss
     the different options, and their pros and cons, before choosing one.
@@ -110,12 +115,11 @@ From Ltac2 Require Import Ltac2 Constr Printf.
 
     **** 2.2.1 Matching Syntactically
 
-    Except for non-linear matching, matching is by default syntactic.
-    That is, terms are matched and compared only up to α-conversion and evar expansion.
-    To match for [P] and [~P], we can use the pattern [p : ?t, np : ~(?t)].
-    In this pattern, [t] is non-linear so it will be matched up to conversion.
-    However, matching for a term of the form [~(_)] will be syntactically,
-    i.e. up to α-conversion.
+    Matching is by default syntactic, except for non-linear matches.
+    This means that terms are matched and compared only up to α-conversion and evar expansion.
+    For instance, to match for [P] and [~P], we can use the pattern [p : ?t, np : ~(?t)].
+    Here, [t] is non-linear and thus the match will not be done syntactically, but instead it will be matched up to conversion.
+    On the other hand, matching for a term of the form [~(_)] will be done syntactically, i.e. up to α-conversion.
 
     If we have found hypotheses [P] and [~P], then we can prove [False].
     Consequently, this is deterministic and we can use [lazy_match!] for it.
@@ -130,14 +134,13 @@ Goal forall P Q, P -> ~Q -> ~P -> False.
 Abort.
 
 (** Once we have found [P] and [~P], we want to prove [False] using the usual
-    [destruct] tactic that expects a Rocq term, that is we want to write [destuct (np p)].
-    However, this is not possible as though, as [p : ident] and [np : ident] are
-    identifiers, i.e. the name of the hypotheses [P] and [~P], wheras [destruct X]
-    expects [X] to be a Rocq term.
+    [destruct] tactic that expects a Rocq term, that is, we want to write [destruct (np p)].
+    However, this is not possible since [p] and [np] are identifiers (of type [ident]), i.e.,
+    the names of the hypotheses, whereas [destruct] expects a Rocq term, not an identifier.
 
-    To get the terms associated to [p] and [np], we must use [Control.hyp : ident -> contr],
-    which transforms an [ident] corresponding to an hypothesis into a Rocq term
-    we can manipulate in Ltac2, that is, into an object of type [constr].
+    To get the terms associated to [p] and [np], we must use [Control.hyp : ident -> constr],
+    which transforms an [ident], corresponding to a hypothesis, into a Rocq term that
+    we can manipulate in Ltac2 (of type [constr]).
     If there are no such hypotheses then it raises an error.
     For [p] and [np], this gives us:
 
@@ -146,9 +149,9 @@ Abort.
         ...
     ]]
 
-    Once, we have gotten the term associated to the hypotheses with [Control.hyp],
-    we must go back to Rocq's world to be able to use [destruct].
-    We do so with [$], which leads to:
+    Once we have the terms associated to the hypotheses,
+    we must return to Rocq's world to be able to use [destruct].
+    We do so with [$], which results in:
 
     [[
       let p := Control.hyp p in
@@ -179,10 +182,10 @@ Goal forall P, P -> (P -> nat) -> False.
   intros. Fail match_PnP_syntax ().
 Abort.
 
-(** It has the advantage to be fast but the downside is that it will not match
-    [?t -> False], even though it is convertible to [~(?t)], as [~(_)] is
-    match syntactically.
-    It is not what we want for a [contradiction] tactic.
+(** This approach has the advantage that it is fast but the downside is that it will not match
+    a hypothesis of the form [?t -> False], even though it is convertible to [~(?t)].
+   This is because [~(_)] is matched syntactically.
+    This is not what we want for a [contradiction] tactic.
 *)
 
 Goal forall P, P -> (P -> False) -> False.
@@ -191,6 +194,7 @@ Abort.
 
 (** To deal with [?t -> False], we could be tempted to add an extra-pattern in
     the definition, but this would not scale as any variations around [~] would fail.
+   For instance, the following hypothesis is not picked up by the syntactic match.
 *)
 
 Goal forall P, P -> ((fun _ => ~P) 0) -> False.
@@ -199,7 +203,7 @@ Abort.
 
 (** Checking terms up to syntax is not a good notion of equality in type theory.
     For instance, [4 + 1] is not syntactically equal to [5].
-    What we really want here is to compare type semantically, i.e. up to
+    What we really want here is to compare types semantically, i.e., up to
     some reduction, conversion or unification.
 *)
 
@@ -214,29 +218,27 @@ Abort.
 (** **** 2.2.2 Matching up to Unification
 
     Before considering finer ways to compare terms semantically, let us first
-    consider how to match terms up to unification as it is what comes up
-    first to mind when trying to write meta-programming.
+    consider how to match terms up to unification, as this is what first comes up
+    to mind when trying to write meta-programming.
 
     To match semantically, we must match for a pair of hypotheses
     [p : ?t1, np : ?t2 |- _], then check that [t2] is of the form [t1 -> False].
-    Something fundamental to understand, here, is that with this approach the
-    syntax check is no longer sufficient to be able to prove [False], as we match
-    for any pair of hypotheses then check we have picked the good ones.
-    We hence need to switch from [lazy_match!] to [match!] to be able to
-    backtrack and try the next hypotheses, if we have picked the wrong ones.
+    Note that with this approach, the syntactic check is no longer sufficient to prove [False],
+   because we first need to match any pair of hypotheses and only then check whether we picked the good ones.
+    We therefore need to switch from [lazy_match!] to [match!] to be able to
+    backtrack and try the next pair if we did not.
 
-    To unify the types, we can exploit that tactics do unification.
+    To unify the types, we can exploit the fact that tactics do unification.
     For instance, we can ensure that [t2] is of the shape [t1 -> X] by applying
-    [$np] to [$p]; i.e. [$np $p], as otherwise it would be ill-typed.
+    [$np] to [$p]; i.e., [$np $p], as otherwise it would be ill-typed.
     We also need to ensure that [X] is [False], otherwise, [destruct ($np $p)]
-    could do pattern matching on [nat] which would not solve the goal.
-    We can ensure that it does solve the goal by wrapping it in [solve].
-    However, it is not an efficient solution, as we would still do [destruct] for
-    every pair of hypotheses until we found one that works, which can be costly.
-    A better solution, is to use a type annotation [$np $p :> False] to force the
+    could do pattern matching on [nat], which would not solve the goal.
+    An alternative is to wrap it in [solve], which fails if it doesn't solve the goal,
+   but this is costly as we would attempt [destruct] on every pair of hypotheses until one works.
+    A better solution is to use a type annotation [$np $p :> False] to force the
     type of [$np $p] to be [False].
 
-    This leads to the script:
+    This leads to the following script:
 *)
 
 Ltac2 match_PnP_unification_v1 () :=
@@ -277,7 +279,7 @@ Qed.
     Rocq 9.1 and later versions, so we will not utilize it in this how-to guide.
     However, if it were available, we could essentially replace [Std.unify]
     with [Std.conversion] to obtain the alternative version.
-    One could even consider parametrising the code by a check that could later
+    One could even consider parameterising the code by a check that could later
     be instantiated with unification, conversion or some syntax check up to
     reduction, like to the head normal form.
 *)
@@ -310,8 +312,8 @@ Goal forall P, P -> ((fun _ => ~P) 0) -> False.
   intros. match_PnP_unification_v2 ().
 Qed.
 
-(** An issue with unification is that it can unify evariables.
-    For instance [match_PnP_unification_v2] can solve the following goal
+(** An issue with unification is that it can unify evars.
+    For instance [match_PnP_unification_v2] can solve the following goal,
     which is not the case for the usual [contradiction] tactic.
 *)
 
@@ -320,24 +322,24 @@ Goal forall P Q, P -> ~Q -> False.
   match_PnP_unification_v2 ().
 Abort.
 
-(** This is costly, but also not a very good practice for automation tactics
-    which should not unify evariables behind the scene as it can
-    unify them in an unexpected way getting the users stuck later.
-    Users should have control on whether evariables are unified or not, hence
-    the different e-variants like [assumption] and [eassumption].
+(** This is costly and also not a good practice for automation tactics,
+    which should not unify evars behind the scene. This is because evars could be
+    unified in unexpected ways, leading to users getting stuck later.
+    Users should have control on whether evars are unified or not, hence
+    the different e-variants of tactics, such as [assumption] and [eassumption].
 *)
 
 (** **** 2.2.3 Matching up to Reduction
 
     To have finer control on what happens and reduce the cost of unification,
-    we can instead reduce our types to a head normal form to check it is of the
-    form [X -> Y] as [->] is an infix notation, (it should be seen as [-> X Y]).
-    We can then check that [X] is [t1], and [Y] is [False].
+    we can instead reduce our types to a head normal form and check if it is of the
+   form [X -> Y]. (Note that [->] is an infix notation, thus [X -> Y] should be seen as [-> X Y]).
+    We can then check that [X] is [t1] and that [Y] is [False].
 
-    To reduce terms, there are many primitives in [Std]. We want to reduce to the
-    head normal form so we can use directly [Std.eval_hnf : constr -> constr].
+    There are many primitives in [Std] that allow us to reduce term. Specifically,
+   to reduce to the head normal form, we can use [Std.eval_hnf : constr -> constr].
     We can then match the head with [lazy_match!] with the pattern [?x -> ?y].
-    We use [lazy_match!] as this is deterministic, either our term is a product
+    We use [lazy_match!] as this is deterministic: our term is either a product
     or it is not.
 
   [[
@@ -356,8 +358,8 @@ Abort.
     very expressive. Unfortunately, there is no primitive for it at the moment.
 
     Consequently, we compare them up to syntactic equality which is still very
-    expressive when combined with reduction using [Constr.equal : term -> term -> bool].
-    This gives us the following script to which we add some printing functions
+    expressive when combined with reduction. We can achieve this using [Constr.equal : term -> term -> bool].
+    This gives us the following script, to which we add some printing functions
     to see what is going on.
 *)
 
@@ -398,7 +400,7 @@ Goal forall P, P -> ((fun _ => ~P) 0) -> False.
   intros. match_PnP_unification_v3 ().
 Qed.
 
-(** However, this now fails as evariables are no longer unified. *)
+(** This now fails, as evariables are no longer unified. *)
 
 Goal forall P Q, P -> ~Q -> False.
   intros. eassert (X4 : _) by admit.
@@ -407,18 +409,17 @@ Abort.
 
 (** **** 2.2.4 Optimisation
 
-    Using reduction already provides us with a fine control over what is going on
-    but is still a bit inefficient as we try to compare every pair of hypotheses.
-    Instead, we can look for a negation [~P], and only if found check
-    for an hypothesis [P]. This basically amounts to spliting the match in
-    two parts. As it can be seen, it matches much fewer hypotheses in case of failure.
+    Using reduction already provides us with finer control over what is going on
+    but our solution is still a bit inefficient, since we compare every pair of hypotheses.
+    To address this, we can instead first look for a negation [~P] and, only if found, check
+    for a second hypothesis [P]. This basically amounts to spliting the match in
+    two parts. As can be seen below, it matches much fewer hypotheses in case of failure.
 *)
 
 Ltac2 match_PnP_unification_v4 () :=
   match! goal with
   | [np : ?t2 |- _ ] =>
       printf "Hypothesis is %I : %t" np t2;
-      let np := Control.hyp np in
       (* Check [t2] is a negation ~P *)
       lazy_match! (Std.eval_hnf t2) with
       | ?x -> ?y =>
@@ -426,12 +427,13 @@ Ltac2 match_PnP_unification_v4 () :=
           printf "%t is a negation %t -> %t" t2 x y;
           printf "Search for %t:" x;
           printf "    ------------------------";
-          (* Check for an hypothesis P *)
+          (* Check for a hypothesis P *)
           match! goal with
           | [p : ?t1 |- _ ] =>
             printf "    Hypothesis is %I : %t" p t1;
             if Constr.equal (Std.eval_hnf x) t1
             then printf "    %t is a contradiction of %t" t2 t1;
+                 let np := Control.hyp np in
                  let p := Control.hyp p in destruct ($np $p)
             else (printf "    ----- Backtracking -----"; fail)
           | [ |- _ ] => printf "    There are no hypotheses left to try";
@@ -471,11 +473,10 @@ Abort.
   So far, we have been using [fail] to trigger failure, which returns
   the error message [Tactic_failure None].
 
-  We can be finer using the primitive [Control.zero : exn -> 'a] to raise an error.
-  We can then raise a custom error message using [Tactic_failure : message option -> exn]
-  that raises an error for any given message.
-  We can then write complex error message using [fprintf] that behaves as [printf]
-  excepts that it returns a [message] rather than printing it.
+  We can be more precise using [Control.zero : exn -> 'a] to raise an error
+   with a custom message via [Tactic_failure : message option -> exn].
+   For complex messages, [fprintf] behaves like [printf] except it
+   returns a [message] rather than printing it.
 *)
 
 Goal forall P, P -> (P -> nat) -> False.
@@ -485,7 +486,7 @@ Goal forall P, P -> (P -> nat) -> False.
 Abort.
 
 (** The error type [exn] is an open type, which mean we can add a constructor to it,
-    i.e. a new exception, at any point.
+    i.e., a new exception, at any point.
     We can hence create a new exception just for [contradiction].
 *)
 
@@ -501,18 +502,18 @@ Abort.
 (** ** 3. Using Constr.Unsafe and Ind API to Add Syntactic Checks
 
     We need to check for hypotheses that are either empty like [False], or
-    of form [~t] where [t] is an inductive type with one constructor without
-    arguments like [nat] or [0 = 0] that we can prove with [constructor 1].
+    of the form [~t], where [t] is an inductive type with one constructor and without
+    arguments, like [nat] or [0 = 0], that we can prove with [constructor 1].
 
     We can do so very directly by trying to solve the goal assuming we have
-    found the good hypotheses wrapping it in [solve] to ensure that it works.
+    found the good hypotheses and wrapping it in [solve] to ensure that it works.
     In this case, for [p : t] and [np : ~t] that would mean doing
     [solve [destruct $p]] and [destruct ($np ltac2:(constructor 1))].
     However, that would be very inefficient as we would [destruct] any hypothesis, which can be expensive.
 
-    A better approach is to add a syntax check that verifies that [t] is of the
+    A better approach is to add a syntactic check that verifies that [t] is of the
     appropriate form. It is much cheaper as it is basically matching syntax.
-    We can do so by using the API [Constr.Unsafe] that enables to access the
+    We can do so by using the [Constr.Unsafe] API, which allows us to access the
     internal syntax of Rocq terms, and [Ind] to access inductive types.
 
     The API "unsafe" is named this way because as soon as you start manipulating
@@ -530,9 +531,9 @@ Abort.
     [App x args], then match [x] for [Ind ind u].
 
     This can be done using [Unsafe.kind : constr -> kind] which converts a
-    [constr] to a shallow embedding of the internal syntax, which is defined
-    as a Ltac2 inductive type [kind].
-    [kind] is a shallow embedding which means a [constr] is not fully
+    [constr] to a shallow embedding of the internal syntax, defined
+    as the Ltac2 inductive type [kind].
+    [kind] is a shallow embedding, meaning that a [constr] is not fully
     converted to a representation of the internal syntax, only its head.
     For example, the type of [Unsafe.App] is [constr -> constr array -> kind].
     That is, [u] and [v] in [Unsafe.App u v] remain regular [constr] elements
@@ -544,11 +545,11 @@ Abort.
 
     Let us first write a function [decompose_app] that translates a [constr] to
     [kind], then match it for [Unsafe.App] and returns the arguments.
-    It is already available starting Rocq 9.1, but it still is good to recode it.
+    It is already available starting Rocq 9.1, but it is still good to recode it.
 
     There are two things to understand here:
     - 1. We match [kind] using [match] and not with [match!] as [kind] is an
-         inductive type of Ltac2. [match!] is to match [constr] and goals.
+         inductive type of Ltac2. [match!] is necessary to match [constr] and goals.
     - 2. We really need the shallow embedding: we cannot match the type of a
          term as we did for [X -> Y]. Indeed, we can match [X -> Y] with [match!]
          as we know there are exactly 2 arguments, so the syntax is fully specified.
@@ -595,9 +596,9 @@ Ltac2 is_empty_inductive (t : constr) : bool :=
 
 (** We can check an inductive type is a singleton similarly, except to one small issue.
     The primitive to access the arguments of a constructor is only available in
-    Rocq 9.1 or above. So for now, we will hence only check that it has only one constructor.
+    Rocq 9.1 or above. So for now, we will only check that it has only one constructor.
     Though this is not perfect and forces us to wrap [destruct ($np ltac2:(constructor 1)]
-    in [solve], it still rules out most inductives like [nat].
+    in [solve], it still rules out most inductives, like [nat].
 *)
 
 Ltac2 is_singleton_type (t : constr) : bool :=
@@ -608,9 +609,8 @@ Ltac2 is_singleton_type (t : constr) : bool :=
 
 (** *** 3.2 Checking for Empty and Singleton Hypotheses
 
-    Writing a tactic to check for empty hypothesis is now fairly easy.
-    We just match the goal using [match!] as the syntax check is not complete,
-    then check if it is empty, and if it is, prove the goal with [destruct $p].
+    Writing a tactic to check for an empty hypothesis is now straightforward:
+    Match the goal with [match!], check if it is empty, and prove it with [destruct $p].
 *)
 
 Ltac2 match_P_empty () :=
@@ -630,19 +630,18 @@ Goal True -> False.
 Abort.
 
 (** Checking for the negation of an inductive type is a little bit more involved
-    as we need to check the type of [?] is of the form [?X -> False].
-    We can do so by creating a fresh evariable of type [Type] with
-    [open_constr:(u :> Type)] then using [Std.unifiy]:
+    as we need to check the type of [np] is of the form [?X -> False].
 *)
 
 Ltac2 match_nP_singleton () :=
   match! goal with
   | [ np : ?t2 |- _ ] =>
-      let np := Control.hyp np in
       lazy_match! (Std.eval_hnf t2) with
       | ?x -> ?y =>
         if Bool.and (is_singleton_type x) (Constr.equal (Std.eval_hnf y) 'False)
-        then solve [destruct ($np ltac2:(constructor 1))]
+        then
+          let np := Control.hyp np in
+          solve [destruct ($np ltac2:(constructor 1))]
         else printf "%t is not a singeleton or %t is not False" x y ; fail
       | _ => printf "%t is not product" t2; fail
       end
@@ -687,7 +686,7 @@ Ltac2 contradiction_empty () :=
             (* If so check if [x] is empty *)
             if is_singleton_type x
             then solve [destruct ($np ltac2:(constructor 1))]
-            (* If not, check for an hypothesis P *)
+            (* If not, check for a hypothesis P *)
             else (match! goal with
               | [p : ?t1 |- _ ] =>
                 if Constr.equal (Std.eval_hnf x) t1
