@@ -15,14 +15,14 @@
   *** Table of content
 
   - 1. Introduction
-  - 2. Matching the goal for [P] and [~P]
+  - 2. Matching the Goal for [P] and [~P]
     - 2.1 Choosing [lazy_match!], [match!] or [multi_match!]
     - 2.2 Matching Syntactically or Semantically
-    - 2.3 Error messages
+    - 2.3 Error Messages
   - 3. Using Constr.Unsafe and Ind API to Add Syntactic Checks
     - 3.1 Checking for Empty and Singleton Types
     - 3.2 Checking for Empty and Singleton Hypotheses
-  - 4. Putting it All Together
+  - 4. Putting It All Together
 
   *** Prerequisites
 
@@ -66,7 +66,7 @@ From Ltac2 Require Import Ltac2 Constr Printf.
 
 *)
 
-(** ** 2. Matching the goal for [P] and [~P]
+(** ** 2. Matching the Goal for [P] and [~P]
 
     *** 2.1 Choosing [lazy_match!], [match!] or [multi_match!]
 
@@ -468,7 +468,7 @@ Goal forall P Q, P -> ~Q -> False.
   Fail match_PnP_unification_v4 ().
 Abort.
 
-(** *** 2.3 Error messages
+(** *** 2.3 Error Messages
 
   So far, we have been using [fail] to trigger failure, which returns
   the error message [Tactic_failure None].
@@ -660,7 +660,7 @@ Goal ~(0 = 1) -> False.
   intros. Fail match_nP_singleton ().
 Abort.
 
-(** ** 4. Putting it All Together *)
+(** ** 4. Putting It All Together *)
 
 (** It took a few explanations, but in the end the code of [contradiction_empty]
     is rather short using Ltac2.

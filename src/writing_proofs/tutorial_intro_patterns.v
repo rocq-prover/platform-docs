@@ -17,7 +17,7 @@
       - 3. Rewriting and Injection
       - 4. Simplifying Equalities
       - 5. Applying Lemmas
-      - 6. Intro patterns everywhere
+      - 6. Intro Patterns Everywhere
 
   *** Prerequisites
 
@@ -448,7 +448,7 @@ Proof.
   - intros [= -> [-> ->]%app_eq_nil]. right. split; reflexivity.
 Qed.
 
-(** ** 6. Intro patterns everywhere *)
+(** ** 6. Intro Patterns Everywhere *)
 
 (** We mentioned before the fact that the tactic [destruct ... as ...] expects
     an intro pattern after [as].

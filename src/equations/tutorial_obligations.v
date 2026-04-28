@@ -15,10 +15,10 @@
 
   - 1. Equations and Obligations
     - 1.1 Obligations
-    - 1.2 Solving obligations
-  - 2. Equations' solving tactic
-    - 2.1 Personalizing the tactic proving obligations
-    - 2.2 What to do if goals are oversimplified
+    - 1.2 Solving Obligations
+  - 2. Equations' Solving Tactic
+    - 2.1 Personalizing the Tactic Proving Obligations
+    - 2.2 What to Do If Goals Are Oversimplified
 
 
   *** Prerequisites
@@ -144,7 +144,7 @@ Fail Definition vmap_comp {A B C n} (g : B -> C) (f : A -> B) (v : vec A n)
 Obligations of vmap_obligations.
 
 
-(** *** 1.2 Solving obligations
+(** *** 1.2 Solving Obligations
 
     There are two different methods to solve the remaining obligations.
 
@@ -194,7 +194,7 @@ vnil := exist _ nil eq_refl.
 Defined.
 
 
-(** ** 2. Equations' solving tactic
+(** ** 2. Equations' Solving Tactic
 
     As mentioned, [Equations] automatically tries to solve obligations.
     It does so using a custom strategy basically simplifying the goals and
@@ -204,7 +204,7 @@ Defined.
 
 Show Obligation Tactic.
 
-(** 2.1 Personalizing the tactic proving obligations
+(** *** 2.1 Personalizing the Tactic Proving Obligations
 
     When working, it is common to be dealing with a particular class of
     functions that shares a common theory, e.g, they involve basic arithmetic.
@@ -260,7 +260,7 @@ gcd x y with gt_eq_gt_dec x y := {
   | inright _           := gcd (x - y) y
   }.
 
-(** 2.2 What to do if goals are oversimplified
+(** *** 2.2 What to Do If Goals Are Oversimplified
 
     In some cases, it can happen that [Equations]' solving tactic is too abrupt
     and oversimplifies goals, or mis-specialised  and ends up getting us stuck.

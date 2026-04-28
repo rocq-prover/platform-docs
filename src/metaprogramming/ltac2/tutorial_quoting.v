@@ -17,8 +17,8 @@
         - 2.1 Quoting Terms
         - 2.2 Quoting Terms Without Existential Variables
         - 2.3 Preterms : Internalize without Typechecking
-      - 3. Ltac2 in terms
-      - 4. Quotations as Ltac2 notations
+      - 3. Ltac2 in Terms
+      - 4. Quotations as Ltac2 Notations
       - 5. Ltac1 and Ltac2
 
     *** Prerequisites
@@ -319,7 +319,7 @@ Ltac2 succ_preterm (x:preterm) := preterm:(S $preterm:x).
 Ltac2 Eval Constr.pretype (succ_preterm (succ_preterm (succ_preterm preterm:(0)))).
 
 
-(** *** 3. Ltac2 in terms
+(** ** 3. Ltac2 in Terms
 
     We can write a Ltac2 expression inside a Gallina expression: *)
 Check ltac2:(exact 0).
@@ -386,7 +386,7 @@ Ltac2 Eval let x := '1 in '($x + $x).
     variable [x]. *)
 
 
-(** ** 4. Quotations as Ltac2 notations
+(** ** 4. Quotations as Ltac2 Notations
 
     Most (all?) Ltac2 quotations do not need to be primitive (though
     they often are) and can be written as Ltac2 notations.

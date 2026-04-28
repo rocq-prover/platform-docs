@@ -21,15 +21,15 @@
 
   *** Table of content
 
-  - 1. Basic definitions and reasoning
-    - 1.1 Defining functions by dependent pattern matching
+  - 1. Basic Definitions and Reasoning
+    - 1.1 Defining Functions by Dependent Pattern Matching
     - 1.2 Reasoning with [Equations]
-      - 1.2.1 Simplifying goals with [autorewrite]
-      - 1.2.2 Proving properties by functional elimination with [funelim]
-      - 1.2.3 Discharging trivial goals with [simp]
+      - 1.2.1 Simplifying Goals with [autorewrite]
+      - 1.2.2 Proving Properties by Functional Elimination with [funelim]
+      - 1.2.3 Discharging Trivial Goals with [simp]
       - 1.2.4 Extending [autorewrite] and [simp]
-  - 2. With clauses
-  - 3. Where clauses
+  - 2. With Clauses
+  - 3. Where Clauses
 
   *** Prerequisites
 
@@ -44,7 +44,7 @@
 
 
 
-(** ** 1. Basic definitions and reasoning
+(** ** 1. Basic Definitions and Reasoning
 
   Let us start by importing the package:
 *)
@@ -54,7 +54,7 @@ From Equations Require Import Equations.
 Axiom to_fill : forall A, A.
 Arguments to_fill {_}.
 
-(** *** 1.1 Defining functions by dependent pattern matching
+(** *** 1.1 Defining Functions by Dependent Pattern Matching
 
     In its simplest form, [Equations] provides a practical interface to
     define functions on inductive types by pattern matching and recursion
@@ -226,7 +226,7 @@ Succeed Example testing : fold_right Nat.mul 1 (1::2::3::4::nil) = 24 := eq_refl
 (** Now that we have seen how to define basic functions, we need to
     understand how to reason about them.
 
-    *** 1.2.1 Simplifying goals
+    *** 1.2.1 Simplifying Goals with [autorewrite]
 
     By default, functions defined using [Equations] are opaque and cannot
     be unfolded with [unfold] nor simplified with [simpl] or [cbn] as one
@@ -323,7 +323,7 @@ Qed.
     proof carrying functions or defining functions by well-founded recursion.
 *)
 
-(** *** 1.2.2 Proving properties by functional elimination
+(** *** 1.2.2 Proving Properties by Functional Elimination with [funelim]
 
     In the examples above, [app_nil] and [app_assoc], we mimicked the pattern
     used in the definition of [app] by [induction l].
@@ -445,7 +445,7 @@ Proof.
   assumption.
 Qed.
 
-(** *** 1.2.3 Discharging trivial goals with [simp]
+(** *** 1.2.3 Discharging Trivial Goals with [simp]
 
     In practice, it often happens in proofs by functional induction that after
     simplification we get a lot of uninteresting cases that we would like to
@@ -591,7 +591,7 @@ Admitted.
 
 
 
-(** ** 2. With clauses
+(** ** 2. With Clauses
 
     The structure of real programs is generally richer than a simple case tree
     on the original arguments.
@@ -746,7 +746,7 @@ Succeed Example testing :
 
 
 
-(** ** 3. Where clauses
+(** ** 3. Where Clauses
 
     As discussed, we often need to compute intermediate terms,
     which is the purpose of the [with] clause.

@@ -30,15 +30,15 @@
 
     *** Contents
 
-    - 1. Quick reminder about universes
-    - 2. Some issues with monomorphic universes
-    - 3. What template universe polymorphism does and doesn't do
+    - 1. Quick Reminder about Universes
+    - 2. Some Issues with Monomorphic Universes
+    - 3. What Template Universe Polymorphism Does and Doesn't Do
       - 3.1. Principle
-      - 3.2. Breaking cycles with template polymorphism
-      - 3.3. Template polymorphism doesn't go through intermediate definitions
-    - 4. A taste of “full” universe polymorphism
+      - 3.2. Breaking Cycles with Template Polymorphism
+      - 3.3. Template Polymorphism Doesn't Go through Intermediate Definitions
+    - 4. A Taste of “Full” Universe Polymorphism
       - 4.1. Principle
-      - 4.2. Universe polymorphic definitions
+      - 4.2. Universe Polymorphic Definitions
 
     *** Prerequisites
 
@@ -52,7 +52,7 @@
     Installation: No plugins or libraries required.
 *)
 
-(** ** 1. Quick reminder about universes
+(** ** 1. Quick Reminder about Universes
 
     A basic understanding of universes would be best to read this tutorial, but
     just in case here's a quick recap.
@@ -167,7 +167,7 @@ Check (fun (T: Type@{Set+1}) => mprod T).
     will only evolve in its relations with other universe variables, i.e.
     through constraints. *)
 
-(** ** 2. Some issues with monomorphic universes *)
+(** ** 2. Some Issues with Monomorphic Universes *)
 
 (** The core limitations of template universe polymorphism are related to when
     it doesn't activate and leaves you with monomorphic universes, so we can
@@ -258,7 +258,7 @@ Fail Definition mprod_lazy {A B: Type} (a: A) (b: B):
      errors appearing or disappearing based on what modules have been imported
       and in what order, a.k.a., everyone's favorite. *)
 
-(** ** 3. What template universe polymorphism does and doesn't do *)
+(** ** 3. What Template Universe Polymorphism Does and Doesn't Do *)
 
 (** *** 3.1. Principle *)
 
@@ -293,7 +293,7 @@ Check (fun (S: Set) => S * S).
     with the constraint that the input levels must be below [prod.u0] and
     [prod.u1] respectively. *)
 
-(** *** 3.2. Breaking cycles with template polymorphism *)
+(** *** 3.2. Breaking Cycles with Template Polymorphism *)
 
 (** It looks like we've solved our universe problem now because we can have both
     definitions of [prod] within [lazyT] and [lazyT] within [prod]. *)
@@ -318,7 +318,7 @@ Print Universes Subgraph (
 (** There are other constraints here but they're unrelated to the inconsistency
     that we had with the monomorphic version. *)
 
-(** *** 3.3. Template polymorphism doesn't go through intermediate definitions *)
+(** *** 3.3. Template Polymorphism Doesn't Go through Intermediate Definitions *)
 
 (** And thus, the problem is solved... but only when the universe at fault
     comes from an inductive type directly (here, [prod]). Template polymorphic
@@ -358,7 +358,7 @@ Fail Definition state_lazy {S T: Type} (t: T): state S (lazyT T) :=
 About sum.
 About list.
 
-(** ** 4. A taste of “full” universe polymorphism *)
+(** ** 4. A Taste of “Full” Universe Polymorphism *)
 
 (** *** 4.1. Principle *)
 
@@ -385,7 +385,7 @@ Check pprod@{uprod uprod}.
 
 (** So far, this is the same as template universe polymorphism. *)
 
-(** *** 4.2. Universe polymorphic definitions *)
+(** *** 4.2. Universe Polymorphic Definitions *)
 
 (** The new trick is that definitions derived from [pprod] can retain the
     polymorphism by having their own universe parameters. *)

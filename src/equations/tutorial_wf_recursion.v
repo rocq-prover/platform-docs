@@ -16,16 +16,16 @@
 
   *** Table of content
 
-  - 1. Introduction to well-founded recursion
-    - 1.1 The syntactic guard condition is limited
-    - 1.2 Well-founded recursion
-  - 2. Well-founded recursion and Equations
-      - 2.1 Using a measure
-      - 2.2 Using a lexicographic order
-      - 2.3 Using a custom well-founded relation
-  - 3. Different tricks to work with well-founded recursion
-    - 3.1 The inspect method
-    - 3.2 Improving recursion hypotheses
+  - 1. Introduction to Well-Founded Recursion
+    - 1.1 The Syntactic Guard Condition Is Limited
+    - 1.2 Well-Founded Recursion
+  - 2. Well-Founded Recursion and Equations
+      - 2.1 Using a Measure
+      - 2.2 Using a Lexicographic Order
+      - 2.3 Using a Custom Well-Founded Relation
+  - 3. Different Methods to Work with Well-Founded Recursion
+    - 3.1 The Inspect Method
+    - 3.2 Improving Recursion Hypotheses
 
   *** Prerequisites
 
@@ -51,7 +51,7 @@ From Stdlib Require Import List Arith Nat Lia.
 Import ListNotations.
 
 
-(** ** 1. Introduction to well-founded recursion
+(** ** 1. Introduction to Well-Founded Recursion
 
     For Rocq to be consistent, all functions must be terminating.
     To ensure they are, Rocq checks that they satisfy a syntactic
@@ -64,7 +64,7 @@ Import ListNotations.
     to see them as such.
 
 
-    *** 1.1 The syntactic guard condition is limited
+    *** 1.1 The Syntactic Guard Condition Is Limited
 
     A common pitfall is when a recursive call is obfuscated, that is when
     it is not performed directly on a subterm [x], but on a subterm to which a
@@ -105,7 +105,7 @@ gcd x y with eq_dec y 0 => {
   | right _ => gcd y (x mod y)
 }.
 
-(** *** 1.2 Well-founded recursion
+(** *** 1.2 Well-Founded Recursion
 
     **** Informally
 
@@ -209,7 +209,7 @@ Definition gcd_Fix (x y : nat) : nat :=
 *)
 
 
-(** ** 2. Well-founded recursion and Equations
+(** ** 2. Well-Founded Recursion and Equations
 
     To define a function by well-founded recursion with Equations, one must add
     after the type of the function [by wf x R], where [x] is the decreasing
@@ -242,7 +242,7 @@ Definition gcd_Fix (x y : nat) : nat :=
     In the following, we assume basic knowledge of obligations and [Equations]
     works together as discussed in the (short) tutorial Equations: Obligations.
 
-    ** 2.1 Using a measure
+    *** 2.1 Using a Measure
 
     The most basic (and actually very versatile) method to define a function by well-founded
     recursion is to define a measure into [nat] to use the well-founded order [<],
@@ -372,7 +372,7 @@ Proof.
 Qed.
 
 
-(** ** 2.2 Using a lexicographic order
+(** *** 2.2 Using a Lexicographic Order
 
     Not all definitions can be proven terminating using a measure and the strict order [<] on [nat].
     In some cases, it is more practical to use a different well-founded order.
@@ -428,7 +428,7 @@ Proof.
 Qed.
 
 
-(** ** 2.3 Using a custom well-founded relation
+(** *** 2.3 Using a Custom Well-Founded Relation
 
     In some cases, there is no basic order that easily lets one define a
     function by well-founded recursion.
@@ -545,7 +545,7 @@ Qed.
 End LinearSearch.
 
 
-(** ** 3. Different methods to work with well-founded recursion
+(** ** 3. Different Methods to Work with Well-Founded Recursion
 
     When defining a function, it can happen that we lose information
     relevant to termination when matching a value, and that we then get
@@ -554,7 +554,7 @@ End LinearSearch.
     In this section, we discuss two such examples and methods to go around the issue.
     Note that the inspect method was already used in section 3.1.
 
-    *** 3.1 The inspect method
+    *** 3.1 The Inspect Method
 
     Working with a particular well-founded order [lt], it may happen that
     we have a choice function [f : A -> option A] that for any [(a :A)]
@@ -628,7 +628,7 @@ Qed.
 End Inspect.
 
 
-(** 3.2 Improving recursion hypotheses
+(** *** 3.2 Improving Recursion Hypotheses
 
     In some cases,  most particularly when using a size or measure,
     it can happen that when defining a function by well-founded recursion,

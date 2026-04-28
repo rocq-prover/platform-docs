@@ -10,9 +10,9 @@
 
   *** Contents
 
-  - 1. Bidirectional typing
-  - 2. Bidirectional typing and existential variables
-  - 3. Bidirectionality hints
+  - 1. Bidirectional Typing
+  - 2. Bidirectional Typing and Existential Variables
+  - 3. Bidirectionality Hints
   - 4. Examples
 
 *)
@@ -21,7 +21,7 @@
 Before we explain what bidirectionality hints are,
 we must first understand some basics of how type checking works in Rocq.
 
-** 1. Bidirectional typing
+** 1. Bidirectional Typing
 
 Rocq uses bidirectional typing, an approach to type systems that interleaves
 type checking with type inference. A bidirectional type system replaces the
@@ -81,7 +81,7 @@ To check whether the application [f a] has a given type [T]:
 - 2. _check_ the argument [a] against its type [A];
 - 3. _unify_ the inferred result type [B a] and the checked one [T].
 
-** 2. Bidirectional typing and existential variables
+** 2. Bidirectional Typing and Existential Variables
 
 To a first approximation, the unification judgement ([T’ ≡ T]) merely
 denotes an equivalence relation between types.
@@ -110,7 +110,7 @@ Unifying [?u ≡ true] first allows the second unification to succeed since
 will fail if we haven't instantiated [?u] yet, because [if ?u then 0 else 1]
 is stuck.
 
-** 3. Bidirectionality hints
+** 3. Bidirectionality Hints
 
 Bidirectionality hints indicate when unification with the result type should happen
 during type-checking of a function application. By default, that happens

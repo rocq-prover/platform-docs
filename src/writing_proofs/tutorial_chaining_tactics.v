@@ -13,9 +13,9 @@
       - 1. Introduction to Chaining
       - 2. Chaining Selectively on Subgoals
         - 2.1 Basics
-        - 2.2 Ignoring Subgoals when Chaining
+        - 2.2 Ignoring Subgoals When Chaining
         - 2.3 Chaining on a Range of Subgoals
-      - 3. Chaining is actually backtracking
+      - 3. Chaining Is Actually Backtracking
       - 4. Repeating Tactics and Chaining
 
   *** Prerequisites
@@ -170,7 +170,7 @@ Section Chaining.
   Qed.
 
 
-(** *** 2.2 Ignoring Subgoals when Chaining
+(** *** 2.2 Ignoring Subgoals When Chaining
 
     The construction [tac ; [tac1 | ... | tacn] ] requires a tactic per subgoal.
     Yet, in some cases, before continuing the common proof, an action is needed
@@ -324,7 +324,7 @@ Section Chaining.
   End Range.
 
 
-(** ** 3 Chaining is actually backtracking
+(** ** 3. Chaining Is Actually Backtracking
 
     A subtility with chaining tactics is that [tac1 ; tac2] does not only
     chain tactics together, applying [tac2] on the subgoals created by [tac1],

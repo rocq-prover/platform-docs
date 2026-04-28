@@ -8,19 +8,19 @@
 
     *** Table of content
 
-    - 1. Searching for lemmas
-      - 1.1 Basic [Search] by name and type
-        - 1.1.1 Exercise: find parity results on [nat]
-      - 1.2 Search and notations
-        - 1.2.1 Exercise: sum and products on [nat] and [Type]
-      - 1.3 Searching using metavariables
-        - 1.3.1 Exercise: find lemmas with metavariables
-      - 1.4 Filtering on hypotheses (parameters) or conclusions (return type)
-        - 1.4.1 Exercise: finding divisibility results
-    - 2. Advanced [Search] options
-      - 2.1 Disambiguating strings in Search queries
-      - 2.2 Filtering results by logical kind and disjunctions of criteria.
-      - 2.3 Searching inside or outside a specific module
+    - 1. Searching for Lemmas
+      - 1.1 Basic [Search] by Name and Type
+        - 1.1.1 Exercise: Find Parity Results on [nat]
+      - 1.2 Search and Notations
+        - 1.2.1 Exercise: Sum and Products on [nat] and [Type]
+      - 1.3 Searching Using Metavariables
+        - 1.3.1 Exercise: Find Lemmas with Metavariables
+      - 1.4 Filtering on Hypotheses (Parameters) or Conclusions (Return Type)
+        - 1.4.1 Exercise: Finding Divisibility Results
+    - 2. Advanced [Search] Options
+      - 2.1 Disambiguating Strings in Search Queries
+      - 2.2 Filtering Results by Logical Kind and Disjunctions of Criteria
+      - 2.3 Searching Inside or Outside a Specific Module
 
     *** Prerequisites
 
@@ -49,9 +49,9 @@
 
 From Stdlib Require Import PeanoNat.
 
-(** ** 1. Searching for lemmas *)
+(** ** 1. Searching for Lemmas *)
 
-(** *** 1.1 Basic [Search] by name and type *)
+(** *** 1.1 Basic [Search] by Name and Type *)
 
 (** In its most basic form, one searches for lemmas or definitions containing
    - a given constant, eg [Nat.add], or [nat]
@@ -93,7 +93,7 @@ Search Nat.odd Nat.add.
     [-"mul"]: *)
 Search Nat.odd Nat.add -"mul".
 
-(** **** 1.1.1 Exercise: find parity results on [nat] *)
+(** **** 1.1.1 Exercise: Find Parity Results on [nat] *)
 
 (** We're interested in lemmas about parity in [nat].
     There are two complementary definitions of being even and being odd:
@@ -124,7 +124,7 @@ Compute Nat.odd 42.
 (* 5. *) Search orb Nat.even Nat.odd -Nat.add -Nat.mul.
 (* End of solution *)
 
-(** *** 1.2 Search and notations *)
+(** *** 1.2 Search and Notations *)
 
 (** Previously, we have been using the names of the operations to [Search] for.
     It may be confusing that such names do not even appear in the output. *)
@@ -231,7 +231,7 @@ Search nat (_ + _) (_ * _). (* still too much *)
     their names. *)
 Search (_ + _) (_ * _) "distr".
 
-(** **** 1.2.1 Exercise: sum and products on [nat] and [Type] *)
+(** **** 1.2.1 Exercise: Sum and Products on [nat] and [Type] *)
 
 (** Write [Search] commands with notations to find out if:
     1. there are operations whose return type is a product type containing [nat];
@@ -245,7 +245,7 @@ Search (_ + _) (_ * _) "distr".
 (* 3. *) Search (_ + _ <= _ * _)%nat.
 (* End of solution *)
 
-(** *** 1.3 Searching using metavariables *)
+(** *** 1.3 Searching Using Metavariables *)
 
 (** We have cheated a little bit. It often happens that we have no idea how
     a lemma is named. However, we know what distributivity (say, on the left)
@@ -276,7 +276,7 @@ Search (?op ?a ?b = ?op ?b ?a) -"orb".
     [bool_scope] is not currently opened): *)
 Search (?op ?a ?b = ?op ?b ?a) -(_ || _)%bool.
 
-(** **** 1.3.1 Exercise: find lemmas with metavariables *)
+(** **** 1.3.1 Exercise: Find Lemmas with Metavariables *)
 
 (** Write [Search] commands with notations and metavariables to find out:
     1. a lemma stating that adding a natural number on the right cannot be
@@ -292,7 +292,7 @@ Search (?op ?a ?b = ?op ?b ?a) -(_ || _)%bool.
 (* 3. *) Search ((Nat.divide ?a ?b) -> ?a <= ?b).
 (* End of solution *)
 
-(** *** 1.4 Filtering on hypotheses (parameters) or conclusions (return type) *)
+(** *** 1.4 Filtering on Hypotheses (Parameters) or Conclusions (Return Type) *)
 
 (** It often happens that we [Search] in the middle of a proof for a lemma we
     suspect will apply to the current goal. In that case, we can use
@@ -334,7 +334,7 @@ Search headhyp:"<->".
     [headhyp]: *)
 Search head:"<->".
 
-(** **** 1.4.1 Exercise: finding divisibility results *)
+(** **** 1.4.1 Exercise: Finding Divisibility Results *)
 
 (** Write [Search] commands with filters on hypotheses and/or conclusions in
     order to:
@@ -349,9 +349,9 @@ Search hyp:(Nat.divide _ (_ * _)).
 Search headconcl:Nat.divide.
 (* End of solution *)
 
-(** ** 2. Advanced [Search] options *)
+(** ** 2. Advanced [Search] Options *)
 
-(** *** 2.1 Disambiguating strings in Search queries *)
+(** *** 2.1 Disambiguating Strings in Search Queries *)
 
 (** We have seen two different usages of strings in search queries, namely,
     searching for constants whose name contains the string, such as: *)
@@ -386,7 +386,7 @@ Search "mod"%nat.
 (** Of course, we can still use a pattern instead of a string: *)
 Search (_ mod _).
 
-(** *** 2.2 Filtering results by logical kind and disjunctions of criteria. *)
+(** *** 2.2 Filtering Results by Logical Kind and Disjunctions of Criteria *)
 
 (** We can also [Search] for a constant defined with a specific keyword.
     For instance, the following lists all [Lemma]s whose names contain "add"
@@ -408,7 +408,7 @@ Search [Nat.add | Nat.mul] ["comm" | "assoc"] [is:Lemma | is:Theorem].
     [the reference manual](https://coq.inria.fr/doc/V8.19.0/refman/proof-engine/vernacular-commands.html?highlight=search#search-by-keyword)
     for the list of all logical kinds which can appear after [is:]. *)
 
-(** *** 2.3 Searching inside or outside a specific module *)
+(** *** 2.3 Searching Inside or Outside a Specific Module *)
 
 (** Finally it is possible to further restrict the [Search] results inside or
     outside a specific [Module]. *)
