@@ -21,8 +21,8 @@
     - 1.3 Matching Bound Variables
     - 1.4 Using the Unsafe API to Access the Term Structure
   - 2. Matching Goals
-    - 1.1 Basics
-    - 1.2 Non-Linear Matching
+    - 2.1 Basics
+    - 2.2 Non-Linear Matching
   - 3. Backtracking and [lazy_match!], [match!], [multi_match!]
     - 3.1 [lazy_match!]
     - 3.2 [match!]
@@ -52,7 +52,7 @@ Ltac2 print_goals0 () :=
 
 Ltac2 Notation print_goals := print_goals0 ().
 
-(** ** 1 Matching terms
+(** ** 1. Matching Terms
 
     *** 1.1 Basics
 

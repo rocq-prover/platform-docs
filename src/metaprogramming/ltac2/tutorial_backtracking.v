@@ -16,13 +16,13 @@
 
   - 1. Introduction to Backtracking
     - 1.1 The Stream Model
-    - 1.2 backtracking and Goal Focusing
+    - 1.2 Backtracking and Goal Focusing
   - 2. Using [Control.zero] to Raise Exceptions
-  - 3. Using [Control.Plus] to Stack Possibilities
+  - 3. Using [Control.plus] to Stack Possibilities
     - 3.1 Reimplementing [+]
   - 4. Using [Control.Case] to Inspect Backtracking
     - 4.1 Reimplementing [||]
-    - 4.1 Reimplementing [once]
+    - 4.2 Reimplementing [once]
 
   *** Prerequisites
 
@@ -78,7 +78,7 @@ Ltac2 Notation "only" startgoal(tactic) endgoal(opt(seq("-", tactic))) ":" tac(t
 
 
 
-(** ** 1. Introducing on Backtracking
+(** ** 1. Introduction to Backtracking
 
   In Rocq, all tactics are potentially backtracking.
 
@@ -88,7 +88,7 @@ Ltac2 Notation "only" startgoal(tactic) endgoal(opt(seq("-", tactic))) ":" tac(t
   In this case, if [tac2] fails triggering backtracking, it will backtrack to
   [tac1], try its next success if there is one, then try [tac2] again.
   This until either all possibilities have been exhausted or [tac2] succeeds for
-  one of the success procuded by [tac1].
+  one of the success produced by [tac1].
 
   The most well known example is the [constructor] tactic that tries the
   constructors one by one, until one leads to a success or all constructors have
@@ -208,7 +208,7 @@ Qed.
     Therefore, most basic tactics and tactic cominators like [constructor] or [first] are
     already wrapped in [Control.enter] for us, so we don't have to think about it.
 
-    In the rest of the tutorial, we will recode basic constructor so
+    In the rest of the tutorial, we will recode basic constructors so
     we need to think about it.
  *)
 
@@ -224,7 +224,7 @@ Qed.
 *)
 
 
-(** 2. Using [Control.zero] to Raise Exceptions
+(** ** 2. Using [Control.zero] to Raise Exceptions
 
     Suppose we want to re-implement a tactic like [eassumption] that checks if
     the goals corresponds to an hypothesis, possibly unifying evariables.
@@ -295,7 +295,7 @@ Abort.
 
 
 
-(** ** 3. [Control.plus] to Catch Exceptions
+(** ** 3. Using [Control.plus] to Stack Possibilities
 
     Since [Ltac2] has proper exceptions and backtracking is primitive, it is not
     only possible to catch exceptions, but also to backtrack upon them.
@@ -386,7 +386,7 @@ Abort.
     if it is empty, and if not return the head with the rest of the stream.
 
 
-  *** 4.1 Reimplement [||]
+  *** 4.1 Reimplementing [||]
 
   As a first example where [Control.case] is needed, consider [++] or section 3.
   In practice, backtracking on [tac2] in case subsequent failure of the choice of [tac1]
@@ -464,7 +464,7 @@ Abort.
 
 
 
-(** *** 4.2 Reimplement [once]
+(** *** 4.2 Reimplementing [once]
 
     Backtracking is allowed by default. To offer better control over it, the
     standard library of tactics offers the tactic combinator [once tac] that

@@ -36,16 +36,16 @@
 
     *** Table of content
 
-    - 1. Library files, modules and identifiers
-      - 1.1 The [Require] command and fully qualified names
-      - 1.2. Basic modules and the [Import] command
-      - 1.3. Name clashes and disambiguation
-      - 1.4. Other content types in modules
-      - 1.5. Guidelines about the order of [Require] and [Import] commands
-    - 2. Fine control over module features
-      - 2.1. On the user's side: selective import
-      - 2.2. On the writer's side: locality attributes in modules
-    - 3. The [Export] command
+    - 1. Library Files, Modules and Identifiers
+      - 1.1 The [Require] Command and Fully Qualified Names
+      - 1.2. Basic Modules and the [Import] Command
+      - 1.3. Name Clashes and Disambiguation
+      - 1.4. Other Content Types in Modules
+      - 1.5. Guidelines about the Order of [Require] and [Import] Commands
+    - 2. Fine Control over Module Features
+      - 2.1. On the User's Side: Selective Import
+      - 2.2. On the Writer's Side: Locality Attributes in Modules
+    - 3. The [Export] Command
 
     *** Prerequisites
 
@@ -60,9 +60,9 @@
     This tutorial should work for Rocq V8.17 or later.
 *)
 
-(** ** 1. Library files, modules and identifiers *)
+(** ** 1. Library Files, Modules and Identifiers *)
 
-(** *** 1.1 The [Require] command and fully qualified names *)
+(** *** 1.1 The [Require] Command and Fully Qualified Names *)
 
 (** Rocq's basic compilation unit is the _library file_. Each compiled file can
     be [Require]d in order to make its logical and computational content
@@ -188,7 +188,7 @@ About Stdlib.Bool.Bool.
     This is done, for instance, with the syntax:
     [From Stdlib Require Import Bool.Bool.]
 
-    In passing, there are many more possibilities to [Require] (with or with
+    In passing, there are many more possibilities to [Require] (with or without
     [Import]) a library file.
     The fully qualified name of this file is [Stdlib.Bool.Bool], and one can
     factor any prefix in the [From] part of the command, so the following
@@ -211,7 +211,7 @@ About Stdlib.Bool.Bool.
     What to choose is then mostly a matter of taste (and clearly depends on the
     number of files in the library). *)
 
-(** *** 1.2. Basic modules and the [Import] command *)
+(** *** 1.2. Basic Modules and the [Import] Command *)
 
 (** We will use modules here mostly because they will help us understand how
     to get what we want from library files (and reject, if possible, what we
@@ -232,7 +232,7 @@ End Foo.
     following way: *)
 Print Module Foo.
 
-(** Notice that, surprisingly, the too lemmas are printed as [Parameter]s, but
+(** Notice that, surprisingly, the two lemmas are printed as [Parameter]s, but
     they really are actual lemmas.
 
     We can access the content of the module with the dot syntax. *)
@@ -283,7 +283,7 @@ Check bar.
       things we will see shortly)
     - _Library files are modules_. *)
 
-(** *** 1.3. Name clashes and disambiguation *)
+(** *** 1.3. Name Clashes and Disambiguation *)
 
 (** When we [Import]ed our [Foo] module before, there was no possible name
     clash since no constant in our context were named [foo], [bar] or [baz].
@@ -464,7 +464,7 @@ Print NestedABC1.ABC.alice.
     - it is possible to have two constants with the same name as long as they
       are in different modules (including library files) *)
 
-(** *** 1.4. Other content types in Modules *)
+(** *** 1.4. Other Content Types in Modules *)
 
 (** So far, our module [Foo] contained only definitions and lemmas.
     In practice there are many more content types in a module:
@@ -543,7 +543,7 @@ Qed.
     - the same holds for coercions, hints, type class instances and canonical
       structures (we omit the experiments for brevity). *)
 
-(** *** 1.5 Guidelines about the order of [Require] and [Import] commands *)
+(** *** 1.5 Guidelines about the Order of [Require] and [Import] Commands *)
 
 (** We have seen that the order of [Require] and [Import] statements is
     important. Some constants could be shadowed by others, which can break
@@ -574,9 +574,9 @@ Qed.
     - We should try to [Require Import] files in the same order everytime to
       increase predictability of breakage due to shadowing. *)
 
-(** ** 2. Fine control over module features *)
+(** ** 2. Fine Control over Module Features *)
 
-(** *** 2.1. On the user's side: selective import *)
+(** *** 2.1. On the User's Side: Selective Import *)
 
 (** Now is a good time to present a recent addition: selective import of
     modules. Recall that importing a module has basically two effects:
@@ -729,7 +729,7 @@ Check UnaryZ.
 Check plus.
 Check UnaryZ_ind.
 
-(** ** 2.2. On the writer's side: locality attributes in modules *)
+(** *** 2.2. On the Writer's Side: Locality Attributes in Modules *)
 
 (** Let's now turn to a complementary tool to give control over what should
     remain local (if not hidden) and what should be exposed in a module (which
@@ -874,7 +874,7 @@ Proof.
 Qed.
 (** **** Exercise: why could we use the same name in the two previous lemmas? *)
 
-(** ** 3. Exporting a module *)
+(** ** 3. The [Export] Command *)
 
 (** Contrarily to [Require]d library files, module imports are not transitive.
     Consider the following nested module: *)

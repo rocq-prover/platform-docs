@@ -10,15 +10,15 @@
 
   *** Table of contents
 
-      - 1. Mixins and structures: declaring a structure
-      - 2. Instances: building an instance of a structure
-      - 3. Factories and builders: alternative representations of structures
-      - 4. Options, parameters, visibility of instances
-        - 4.1. Short names
+      - 1. Mixins and Structures: Declaring a Structure
+      - 2. Instances: Building an Instance of a Structure
+      - 3. Factories and Builders: Alternative Representations of Structures
+      - 4. Options, Parameters, Visibility of Instances
+        - 4.1. Short Names
         - 4.2. Parameters
-        - 4.3. Primitive records
-        - 4.4. Visibility of instances
-      - 5. Non-forgetful inheritance
+        - 4.3. Primitive Records
+        - 4.4. Visibility of Instances
+      - 5. Non-Forgetful Inheritance
 
   *** Prerequisites
 
@@ -46,7 +46,7 @@
 
   However, describing such hierarchies using Rocq commands takes a
   lot of effort, is prone to errors and leads to code that is hard to maintain.
-  Hierarchy Builder prodives commands that declare all the required objects
+  Hierarchy Builder provides commands that declare all the required objects
   automatically. It also guarantees a few properties, like the compatibility of
   coercion paths. If there are several ways to build an instance of a structure,
   HB ensures that they all yield the same resulting instance. HB also has
@@ -69,7 +69,7 @@
 From HB Require Import structures.
 From Stdlib Require Import PeanoNat.
 
-(** ** 1. Mixins and structures: declaring a structure
+(** ** 1. Mixins and Structures: Declaring a Structure
 
   By structure, we mean an object (which we call structure) equipped with some
   data (usually operations) and properties. The basic building block of a
@@ -163,7 +163,7 @@ HB.about Semigroup.
 
 Check fun (T : Semigroup.type) => T : Magma.type.
 
-(** ** 2. Instances : building an instance of a structure
+(** ** 2. Instances: Building an Instance of a Structure
 
   Let us now build actual magmas. to find an instance for a given type, Rocq
   only looks at the "head" of the subject, which we call its key.
@@ -239,7 +239,7 @@ rewrite (@opA nat).
 reflexivity.
 Qed.
 
-(** ** 3. Factories and builders: alternative representations of structures
+(** ** 3. Factories and Builders: Alternative Representations of Structures
 
   There may be several ways to describe the same structure. For example, when
   dealing with orders, giving either of the large operator and the strict
@@ -317,11 +317,11 @@ HB.structure Definition ComSemigroup := {T of isSemigroup T & isComm T}.
   structures with the same set of mixins.
 *)
 
-(** ** 4. Options, scope
+(** ** 4. Options, Parameters, Visibility of Instances
 
   HB lets us customize a few things.
 
-    *** 4.1. Short names
+    *** 4.1. Short Names
 
   First, we can give a short name for a
   structure with the [short] attribute.
@@ -348,7 +348,7 @@ HB.mixin Record isMagmaMorphism (T U : Magma.type) (f : T -> U) := {
 HB.structure Definition MagmaMorphism (T U : Magma.type) :=
   {f of isMagmaMorphism T U f}.
 
-(** *** 4.3 Primitive records
+(** *** 4.3. Primitive Records
 
   We can ask for HB to use primitive records with the [primitive] attribute.
   Primitive records satisfy the eta-contraction rule, stating that for a
@@ -377,7 +377,7 @@ Check fun (T : Magma.type) (f : MagmaMorphism'.type T T) =>
   MagmaMorphism'.sort T T f.
 Unset Printing Coercions.
 
-(** *** 4.4. Visibility of instances
+(** *** 4.4. Visibility of Instances
 
   Now, let us talk about the visibility of instances. An instance is visible
   only when it is declared in the current module.
@@ -426,7 +426,7 @@ Check idfun' nat : MagmaMorphism.type nat nat. (* The instance has been imported
 Fail Check hidden. (* [hidden] has not been imported. *)
 Check B.hidden.
 
-(** 5. Non-forgetful inheritance *)
+(** ** 5. Non-Forgetful Inheritance *)
 
 (** Non-forgetful inheritance is a common issue we encounter when building
   hierarchies of structures. This issue arises when there are several
@@ -470,7 +470,7 @@ destruct w; reflexivity.
 Qed.
 
 (** In this case, both instances are extensionally the same so we can still
-  conclude, but the could very well have not been.
+  conclude, but they could very well have not been.
 *)
 
 (** The standard solution to this is to make one structure depend on the other.

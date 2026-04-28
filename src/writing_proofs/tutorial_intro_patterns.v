@@ -17,7 +17,7 @@
       - 3. Rewriting and Injection
       - 4. Simplifying Equalities
       - 5. Applying Lemmas
-      - 6. Intro patterns everywhere
+      - 6. Intro Patterns Everywhere
 
   *** Prerequisites
 
@@ -273,7 +273,7 @@ Proof.
   exists x, y. apply f. assumption.
 Qed.
 
-(** ** 3. Rewriting Lemmas *)
+(** ** 3. Rewriting and Injection *)
 
 (** It is also very common to introduce an equality that we only wish to use once as a rewrite rule on the goal:
 *)
@@ -448,7 +448,7 @@ Proof.
   - intros [= -> [-> ->]%app_eq_nil]. right. split; reflexivity.
 Qed.
 
-(** ** 6. Intro patterns everywhere *)
+(** ** 6. Intro Patterns Everywhere *)
 
 (** We mentioned before the fact that the tactic [destruct ... as ...] expects
     an intro pattern after [as].

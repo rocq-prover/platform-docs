@@ -15,14 +15,14 @@
   *** Table of content
 
   - 1. Introduction
-  - 2. Matching the goal for [P] and [~P]
+  - 2. Matching the Goal for [P] and [~P]
     - 2.1 Choosing [lazy_match!], [match!] or [multi_match!]
     - 2.2 Matching Syntactically or Semantically
-    - 2.3 Error messages
+    - 2.3 Error Messages
   - 3. Using Constr.Unsafe and Ind API to Add Syntactic Checks
     - 3.1 Checking for Empty and Singleton Types
     - 3.2 Checking for Empty and Singleton Hypotheses
-  - 4. Putting it All Together
+  - 4. Putting It All Together
 
   *** Prerequisites
 
@@ -66,7 +66,7 @@ From Ltac2 Require Import Ltac2 Constr Printf.
 
 *)
 
-(** ** 2. Matching the goal for [P] and [~P]
+(** ** 2. Matching the Goal for [P] and [~P]
 
     *** 2.1 Choosing [lazy_match!], [match!] or [multi_match!]
 
@@ -95,7 +95,7 @@ From Ltac2 Require Import Ltac2 Constr Printf.
     For this scenario, the [contradiction] tactic is meant to solve goals with a simple enough
     inconsistent context. It is not meant to be linked with other tactics.
     Consequently, we have no use for [multimatch!] to implement [contradiction].
-    Choosing betwen [lazy_match!] and [match!] really depends on whether we need
+    Choosing between [lazy_match!] and [match!] really depends on whether we need
     more than a syntactic checkr, as we will see in the rest of this document.
 *)
 
@@ -642,7 +642,7 @@ Ltac2 match_nP_singleton () :=
         then
           let np := Control.hyp np in
           solve [destruct ($np ltac2:(constructor 1))]
-        else printf "%t is not a singeleton or %t is not False" x y ; fail
+        else printf "%t is not a singleton or %t is not False" x y ; fail
       | _ => printf "%t is not product" t2; fail
       end
   | [ |- _ ] => Control.zero (Contradiction_Failed (Some (fprintf "No such contradiction")))
@@ -660,14 +660,14 @@ Goal ~(0 = 1) -> False.
   intros. Fail match_nP_singleton ().
 Abort.
 
-(** ** 4. Putting it All Together *)
+(** ** 4. Putting It All Together *)
 
 (** It took a few explanations, but in the end the code of [contradiction_empty]
     is rather short using Ltac2.
 
     To be efficient, we first perform the syntax check as it is very cheap.
-    We hence first check for an empty hypotheses, then if it is a negation,
-    in particular of a singletion inductive type. If it is none of these,
+    We hence first check for an empty hypothesis, then if it is a negation,
+    in particular of a singleton inductive type. If it is none of these,
     check for [P] and [~P] which we perform last in order not to check
     the whole context for nothing.
 *)

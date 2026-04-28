@@ -24,13 +24,13 @@
   - 2. Advanced Dependent Pattern Matching
     - 2.1 Discarding Automatically Impossible Cases
     - 2.2 The No-Confusion Properties
-    - 2.3 The Tactic Depelim
+    - 2.3 No-confusion and Dependent Elimination Tactics
   - 3. Unifying Indices and Inaccessible Patterns
 
   *** Prerequisites:
 
   Needed:
-  - We assume basic knowledge of Rocq, of and defining functions by recursion
+  - We assume basic knowledge of Rocq, and of defining functions by recursion
   - We assume basic knowledge of the plugin Equations, e.g, as presented
     in the tutorial Equations : Basics
 
@@ -48,7 +48,7 @@ From Equations Require Import Equations.
 
  (** ** 1. Basic Reasoning on Indexed Inductive Types
 
-    Indexed inductive types are particular kind of inductive definitions
+    Indexed inductive types are a particular kind of inductive definitions
     Given a fixed parameter [A : Type], vectors define a family of linked
     inductive types.
     One of the most well-known examples of indexed inductive types are vectors.
@@ -71,7 +71,7 @@ Arguments vnil {_}.
 Arguments vcons {_} _ _ _.
 
 (** The difference between a parameter and an index is that a parameter is
-    constant accross all the return types of the constructors, whereas an index
+    constant across all the return types of the constructors, whereas an index
     changes in at least one of the return types.
     For instance, in the definition of vectors the type [A] is a parameter
     as it is constant across all the return types: [vec A 0] and [vec A (S n)].
@@ -517,7 +517,7 @@ vmap'' f (S n) (vcons a v) := vcons (f a) (vmap'' f n v).
 Extraction vmap.
 Extraction vmap''.
 
-(** Using inaccessible patterns hence allows to separate explicitely the subjects of
+(** Using inaccessible patterns hence allows to separate explicitly the subjects of
   pattern-matchings and the inferred indices in definitions. The following alternative
   definition of the square matrix diagonal pattern-matches only on the [vec] argument,
   but uses well-founded recursion on the index [n] to justify termination, as
