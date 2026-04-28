@@ -18,6 +18,8 @@
   - 1. Matching Terms
     - 1.1 Basics
     - 1.2 Non-Linear Matching
+    - 1.3 Matching Bound Variables
+    - 1.4 Using the Unsafe API to Access the Term Structure
   - 2. Matching Goals
     - 1.1 Basics
     - 1.2 Non-Linear Matching
@@ -234,7 +236,7 @@ Goal (1 = 1) -> False.
   intros H. is_refl_eq (Constr.type 'H).
 Abort.
 
-(** ** 1.3 Matching bound variables
+(** ** 1.3 Matching Bound Variables
 
     When a term contains a binder, like [let var := expr in body] or [fun var => body],
     the bound variable [var] only exists inside the binder's scope.
