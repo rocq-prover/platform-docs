@@ -55,7 +55,7 @@
 (** ** 1. Quick reminder about universes
 
     A basic understanding of universes would be best to read this tutorial, but
-    just in case here's a quick recap'.
+    just in case here's a quick recap.
 
     The reason for universes is that there is no obvious type that can be
     assigned to the term [Type]. You can decide not to give it a type (in which
@@ -80,7 +80,7 @@
     means something closer to [Type@{_}] where Rocq infers a universe level
     based on context, which can be confusing. This is why any job that involves
     inspecting universes requires [Set Printing Universes], and why here we'll
-    will write most universes explicitly.
+    write most universes explicitly.
 
     Beyond checking the types of sorts, universes above 0 appear as a result of
     quantification. As a naïve intuition, any term that quantifies over types
@@ -260,7 +260,7 @@ Fail Definition mprod_lazy {A B: Type} (a: A) (b: B):
 
 (** ** 3. What template universe polymorphism does and doesn't do *)
 
-(** *** Principle *)
+(** *** 3.1. Principle *)
 
 (** Template universe polymorphism is a middle-ground between monomorphic
     universes and proper polymorphic universes that allows for some degree of
@@ -293,7 +293,7 @@ Check (fun (S: Set) => S * S).
     with the constraint that the input levels must be below [prod.u0] and
     [prod.u1] respectively. *)
 
-(** *** Breaking cycles with template polymorphism *)
+(** *** 3.2. Breaking cycles with template polymorphism *)
 
 (** It looks like we've solved our universe problem now because we can have both
     definitions of [prod] within [lazyT] and [lazyT] within [prod]. *)
@@ -318,7 +318,7 @@ Print Universes Subgraph (
 (** There are other constraints here but they're unrelated to the inconsistency
     that we had with the monomorphic version. *)
 
-(** *** Template polymorphism doesn't go through intermediate definitions *)
+(** *** 3.3. Template polymorphism doesn't go through intermediate definitions *)
 
 (** And thus, the problem is solved... but only when the universe at fault
     comes from an inductive type directly (here, [prod]). Template polymorphic
@@ -358,9 +358,9 @@ Fail Definition state_lazy {S T: Type} (t: T): state S (lazyT T) :=
 About sum.
 About list.
 
-(** ** 4. A taste of “full” universe polymorphism ***)
+(** ** 4. A taste of “full” universe polymorphism *)
 
-(** *** Principle *)
+(** *** 4.1. Principle *)
 
 (** Template universe polymorphism is limited in that it only applies to
     inductives and any indirect uses of such a type are just monomorphic. The
@@ -385,7 +385,7 @@ Check pprod@{uprod uprod}.
 
 (** So far, this is the same as template universe polymorphism. *)
 
-(** *** Universe polymorphic definitions *)
+(** *** 4.2. Universe polymorphic definitions *)
 
 (** The new trick is that definitions derived from [pprod] can retain the
     polymorphism by having their own universe parameters. *)

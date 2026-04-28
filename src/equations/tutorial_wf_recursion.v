@@ -12,14 +12,14 @@
   them using well-founded recursion and [Equations].
   In some cases, applying well-founded recursion can fail because information
   relevant to termination get lost during recursion.
-  In section 3, we discuss two such cases a how to go around them.
+  In section 3, we discuss two such cases and how to go around them.
 
   *** Table of content
 
   - 1. Introduction to well-founded recursion
     - 1.1 The syntactic guard condition is limited
     - 1.2 Well-founded recursion
-    2. Well-founded recursion and Equations
+  - 2. Well-founded recursion and Equations
       - 2.1 Using a measure
       - 2.2 Using a lexicographic order
       - 2.3 Using a custom well-founded relation
@@ -551,8 +551,8 @@ End LinearSearch.
     relevant to termination when matching a value, and that we then get
     stuck trying to prove termination.
 
-    In this section, we discuss two such example an methods to go around the issue.
-    Note that the inspect method was already used in section 2.4.
+    In this section, we discuss two such examples and methods to go around the issue.
+    Note that the inspect method was already used in section 3.1.
 
     *** 3.1 The inspect method
 

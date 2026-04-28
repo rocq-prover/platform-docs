@@ -29,7 +29,7 @@
 From Ltac2 Require Import Ltac2.
 From Ltac2 Require Import Printf.
 
-(** 1. Types of Tactics in Ltac2, and Thunks
+(** ** 1. Types of Tactics in Ltac2, and Thunks
 
   Usual tactics like [assumption] or [left] are notations for Ltac2 functions.
   They modify  the proof state through side effects, such as modifying

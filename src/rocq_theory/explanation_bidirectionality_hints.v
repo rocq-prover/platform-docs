@@ -2,7 +2,7 @@
 
   *** Summary
 
-  An explanation of bidirectionlity hints.
+  An explanation of bidirectionality hints.
   After presenting the requisite background on bidirectional typing and
   existential variables in Rocq, we will see how bidirectionality hints affect
   type checking of function applications, and we will illustrate with simple

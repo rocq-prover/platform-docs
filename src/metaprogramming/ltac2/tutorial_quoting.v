@@ -53,7 +53,7 @@ Goal nat -> bool.
 Abort.
 
 (** Note, up to Rocq 9.2, there is a slight printing inconsistency: the
-    evaluated identifier is printed ith the [@] syntax, but the non evaluated
+    evaluated identifier is printed with the [@] syntax, but the non evaluated
     Ltac2 expression is printed with [ident:(...)]: *)
 Ltac2 make_x () := @x.
 Print make_x.

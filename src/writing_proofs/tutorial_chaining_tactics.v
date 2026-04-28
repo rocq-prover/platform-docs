@@ -14,7 +14,7 @@
       - 2. Chaining Selectively on Subgoals
         - 2.1 Basics
         - 2.2 Ignoring Subgoals when Chaining
-        - 2.3 Chaining on a Range of Sugoals
+        - 2.3 Chaining on a Range of Subgoals
       - 3. Chaining is actually backtracking
       - 4. Repeating Tactics and Chaining
 
@@ -44,7 +44,7 @@ Section Chaining.
   Set Printing Parentheses.
 
 (** In Rocq, we prove theorems interactively, applying at each step a tactic
-    that transform the goal, and basically corresponds to applying a logical resonning.
+    that transform the goal, and basically corresponds to applying a logical reasoning.
     Yet, in practice, it often happens that some of the primitive tactics are too low-level,
     and that a higher-level resoning step we would like to do gets decomposed into
     a sequence of tactics, and hence of interactive steps.
@@ -261,7 +261,7 @@ Section Chaining.
   Qed.
 
 
-(** *** 2.3 Chaining on a Range of Sugoals
+(** *** 2.3 Chaining on a Range of Subgoals
 
     It often happens that we have several subgoals, for which we want to apply
     the same tactic, or do nothing.

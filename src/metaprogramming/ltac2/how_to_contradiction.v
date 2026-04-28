@@ -95,7 +95,7 @@ From Ltac2 Require Import Ltac2 Constr Printf.
     For this scenario, the [contradiction] tactic is meant to solve goals with a simple enough
     inconsistent context. It is not meant to be linked with other tactics.
     Consequently, we have no use for [multimatch!] to implement [contradiction].
-    Choosing betwen [lazy_match!] and [match!] really depends on whether we need
+    Choosing between [lazy_match!] and [match!] really depends on whether we need
     more than a syntactic checkr, as we will see in the rest of this document.
 *)
 
@@ -468,7 +468,7 @@ Goal forall P Q, P -> ~Q -> False.
   Fail match_PnP_unification_v4 ().
 Abort.
 
-(** *** 2.3 Error Messages
+(** *** 2.3 Error messages
 
   So far, we have been using [fail] to trigger failure, which returns
   the error message [Tactic_failure None].
@@ -642,7 +642,7 @@ Ltac2 match_nP_singleton () :=
         then
           let np := Control.hyp np in
           solve [destruct ($np ltac2:(constructor 1))]
-        else printf "%t is not a singeleton or %t is not False" x y ; fail
+        else printf "%t is not a singleton or %t is not False" x y ; fail
       | _ => printf "%t is not product" t2; fail
       end
   | [ |- _ ] => Control.zero (Contradiction_Failed (Some (fprintf "No such contradiction")))
@@ -666,8 +666,8 @@ Abort.
     is rather short using Ltac2.
 
     To be efficient, we first perform the syntax check as it is very cheap.
-    We hence first check for an empty hypotheses, then if it is a negation,
-    in particular of a singletion inductive type. If it is none of these,
+    We hence first check for an empty hypothesis, then if it is a negation,
+    in particular of a singleton inductive type. If it is none of these,
     check for [P] and [~P] which we perform last in order not to check
     the whole context for nothing.
 *)

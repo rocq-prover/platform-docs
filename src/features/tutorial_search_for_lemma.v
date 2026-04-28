@@ -82,7 +82,7 @@ Search "add" Nat.mul.
     - has [Nat.odd] in the type *)
 Search Nat.add "mul" Nat.odd.
 
-(** We can also _filter out_ results satisfying a criterion with by prepending
+(** We can also _filter out_ results satisfying a criterion by prepending
     it with a minus [-] symbol.
     Say we're looking for a lemma stating that the sum of an even number and an
     odd number is odd: *)
@@ -269,7 +269,7 @@ Search nat (?op ?a ?b = ?op ?b ?a).
 (** Another possibility is to exclude any results mentioning [bool]: *)
 Search (?op ?a ?b = ?op ?b ?a) -bool.
 
-(** We can also opt to remove only results with "orb" it its name: *)
+(** We can also opt to remove only results with "orb" in its name: *)
 Search (?op ?a ?b = ?op ?b ?a) -"orb".
 
 (** Or results where the (_ || _) operator appears (notice the scope key, since

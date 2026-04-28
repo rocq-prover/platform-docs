@@ -46,7 +46,7 @@
 
   However, describing such hierarchies using Rocq commands takes a
   lot of effort, is prone to errors and leads to code that is hard to maintain.
-  Hierarchy Builder prodives commands that declare all the required objects
+  Hierarchy Builder provides commands that declare all the required objects
   automatically. It also guarantees a few properties, like the compatibility of
   coercion paths. If there are several ways to build an instance of a structure,
   HB ensures that they all yield the same resulting instance. HB also has
@@ -163,7 +163,7 @@ HB.about Semigroup.
 
 Check fun (T : Semigroup.type) => T : Magma.type.
 
-(** ** 2. Instances : building an instance of a structure
+(** ** 2. Instances: building an instance of a structure
 
   Let us now build actual magmas. to find an instance for a given type, Rocq
   only looks at the "head" of the subject, which we call its key.
@@ -317,7 +317,7 @@ HB.structure Definition ComSemigroup := {T of isSemigroup T & isComm T}.
   structures with the same set of mixins.
 *)
 
-(** ** 4. Options, scope
+(** ** 4. Options, parameters, visibility of instances
 
   HB lets us customize a few things.
 
@@ -426,7 +426,7 @@ Check idfun' nat : MagmaMorphism.type nat nat. (* The instance has been imported
 Fail Check hidden. (* [hidden] has not been imported. *)
 Check B.hidden.
 
-(** 5. Non-forgetful inheritance *)
+(** ** 5. Non-forgetful inheritance *)
 
 (** Non-forgetful inheritance is a common issue we encounter when building
   hierarchies of structures. This issue arises when there are several
@@ -470,7 +470,7 @@ destruct w; reflexivity.
 Qed.
 
 (** In this case, both instances are extensionally the same so we can still
-  conclude, but the could very well have not been.
+  conclude, but they could very well have not been.
 *)
 
 (** The standard solution to this is to make one structure depend on the other.

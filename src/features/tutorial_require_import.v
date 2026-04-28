@@ -188,7 +188,7 @@ About Stdlib.Bool.Bool.
     This is done, for instance, with the syntax:
     [From Stdlib Require Import Bool.Bool.]
 
-    In passing, there are many more possibilities to [Require] (with or with
+    In passing, there are many more possibilities to [Require] (with or without
     [Import]) a library file.
     The fully qualified name of this file is [Stdlib.Bool.Bool], and one can
     factor any prefix in the [From] part of the command, so the following
@@ -232,7 +232,7 @@ End Foo.
     following way: *)
 Print Module Foo.
 
-(** Notice that, surprisingly, the too lemmas are printed as [Parameter]s, but
+(** Notice that, surprisingly, the two lemmas are printed as [Parameter]s, but
     they really are actual lemmas.
 
     We can access the content of the module with the dot syntax. *)
@@ -464,7 +464,7 @@ Print NestedABC1.ABC.alice.
     - it is possible to have two constants with the same name as long as they
       are in different modules (including library files) *)
 
-(** *** 1.4. Other content types in Modules *)
+(** *** 1.4. Other content types in modules *)
 
 (** So far, our module [Foo] contained only definitions and lemmas.
     In practice there are many more content types in a module:
@@ -874,7 +874,7 @@ Proof.
 Qed.
 (** **** Exercise: why could we use the same name in the two previous lemmas? *)
 
-(** ** 3. Exporting a module *)
+(** ** 3. The [Export] command *)
 
 (** Contrarily to [Require]d library files, module imports are not transitive.
     Consider the following nested module: *)

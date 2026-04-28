@@ -273,7 +273,7 @@ Proof.
   exists x, y. apply f. assumption.
 Qed.
 
-(** ** 3. Rewriting Lemmas *)
+(** ** 3. Rewriting and Injection *)
 
 (** It is also very common to introduce an equality that we only wish to use once as a rewrite rule on the goal:
 *)

@@ -69,13 +69,13 @@ Inductive list A : Type :=
 Arguments nil {_}.
 Arguments cons {_} _ _.
 
-(** To write a function [f : list A -> B] on lists or another a basic
+(** To write a function [f : list A -> B] on lists or another basic
       inductive type, it suffices to:
     - Begin your definition with "[Equations]" rather than "[Fixpoint]".
     - Specify how the function, [f], computes on each constructor, [cst x1 ... xn],
       by writing [f (cst x1 ... xn) := t] where [t] may contain [f] recursively.
     - Separate the different cases by semi-colon "[;]"
-    - As usual finish you definition by a dot "[.]"
+    - As usual finish your definition by a dot "[.]"
 
   For instance, we can define the functions [tail], [length] and [app] by:
 *)
@@ -131,7 +131,7 @@ app' []     l' := l';
 app' (a::l) l' := a :: (app' l l').
 
 (** For the users that would prefer it, there is also an alternative syntax
-    closer to the the one provided by the [Fixpoint] command and Rocq's native pattern-matching.
+    closer to the one provided by the [Fixpoint] command and Rocq's native pattern-matching.
     With this syntax, we have to start each clause with "[|]" and separate the
     different patterns in a clause by "[,]", but we no longer have to repeat
     the name of the function nor to put parenthesis or finish a line by "[;]".
@@ -320,7 +320,7 @@ Qed.
     rewrite directly by a specific equation.
     In particular, compared to [cbn] it will never unfold unwanted terms, like
     proof terms that would be part of the definition, for instance, when defining
-    proof carrying functions or defining functions by well-fouded recursion.
+    proof carrying functions or defining functions by well-founded recursion.
 *)
 
 (** *** 1.2.2 Proving properties by functional elimination
@@ -434,7 +434,7 @@ Proof.
   (* We then get stuck as we have the wrong hypotheses *)
 Abort.
 
-(* Wheras funelim does it automatically for you *)
+(* Whereas funelim does it automatically for you *)
 Definition half_mod2 (n : nat) : n = half n + half n + mod2 n.
 Proof.
   funelim (half n). 1-2: reflexivity.
@@ -746,7 +746,7 @@ Succeed Example testing :
 
 
 
-(** ** 3. Where Clauses
+(** ** 3. Where clauses
 
     As discussed, we often need to compute intermediate terms,
     which is the purpose of the [with] clause.
