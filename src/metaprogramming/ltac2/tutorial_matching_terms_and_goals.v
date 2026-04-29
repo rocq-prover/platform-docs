@@ -277,8 +277,9 @@ Ltac2 simplify_let0 (h : ident) : unit :=
   lazy_match! type_h with
   | let var := ?expr in @?body var =>
       printf "the body is :%t" body;
-      set (x' := $expr) in *;
-      let x := Control.hyp @x' in
+      let x := Fresh.in_goal @x in
+      set ($x := $expr) in *;
+      let x := Control.hyp x in
       change ($body $x) in h;
       lazy head beta in h
   | _ => Control.zero (Tactic_failure (Some (fprintf "the type %t of %I is not a letin" type_h h)))
@@ -347,9 +348,10 @@ Ltac2 simplify_let_bis0 (h : ident) : unit :=
   let type_h := type (Control.hyp h) in
   match Unsafe.kind type_h with
   | LetIn _ expr body =>
-      set (x' := $expr) in *;
-      let x' := Control.hyp @x' in
-      let new_body := substnl [x'] 0 body in
+      let x := Fresh.in_goal @x in
+      set ($x := $expr) in *;
+      let x := Control.hyp x in
+      let new_body := substnl [x] 0 body in
       change ($new_body) in h
   | _ => Control.zero (Tactic_failure (Some (fprintf "the type %t of %I is not a letin" type_h h)))
 
