@@ -767,58 +767,33 @@ Abort.
 (** *** 4.4 Backtracking
 
     Ltac1 controls backtracking through:
-    - [match goal] (backtracks into branches on failure),
-    - [fail n] (propagates failure [n] levels up through [match] branches),
-    - [first [tac1 | tac2 | ...]] (tries alternatives in order).
+    - [match goal] (backtracks into branches on failure, and co),
+    - Combinators like [first [tac1 | tac2 | ...]]
+    - [fail n] (propagates failure [n] levels up through [match] branches)
 
-    Ltac2 models backtracking as **streams of possibilities** and exposes three
-    explicit low-level primitives:
+    Ltac2 has more fine grained controls on backtracking.
+    Matching and combinators are still available, though [fail n] is not currently.
+    In additionn, Ltac2 has low-level primitives to manipulate values
+    as stream of possibilities, and backtracking.
+    Combinators like [first] can then be reimplemented using theses primitives.
+
+    Most users do not have the needs for these primitives, and the existing
+    combinators are enough. We mention them briefly, and refer to the
+    documentation for more details. The three primitives are:
 
     - [Control.zero : exn -> 'a] -- raises an exception and triggers backtracking.
       This is the primitive underlying Ltac2 [fail].
+
     - [Control.plus : (unit -> 'a) -> (exn -> 'a) -> 'a] -- stacks a backtracking
       choice: try the first thunk; on exception, try the handler.
-      This is the primitive underlying [tac1 + tac2].
+      This is the primitive underlying [tac1 + tac2], but it is finer
+      since different decision can be performed depending on the exception raised.
+
     - [Control.case : (unit -> 'a) -> ('a * (exn -> 'a)) result] -- inspects
       whether a tactic has at least one success without consuming it.
 
-    Note that in Ltac2, [fail] is defined as
-    [Control.enter (fun () => Control.zero (Tactic_failure None))],
-    making its meaning precise.
 
-    Regarding [fail n]: Ltac1's [fail n] propagates failure through [n] levels of
-    [match] branches. This is not needed in Ltac2 because backtracking always
-    propagates unless explicitly stopped via [Control.throw] (a non-backtrackable
-    exception).
-
-    Here is a reimplementation of [first] using [Control.plus]:
-*)
-
-Ltac2 rec my_first (tacs : (unit -> unit) list) : unit :=
-  match tacs with
-  | [] =>
-      Control.zero (Tactic_failure (Some (fprintf "my_first: all tactics failed")))
-  | t :: rest =>
-      Control.plus t (fun _ => my_first rest)
-  end.
-
-Ltac2 always_fail () : unit :=
-  Control.zero (Tactic_failure (Some (fprintf "always_fail"))).
-
-Goal 0 = 0.
-  my_first [always_fail; always_fail; fun () => reflexivity].
-Qed.
-
-Goal 0 = 0.
-  Fail my_first [always_fail; always_fail].
-Abort.
-
-(** For a detailed treatment of backtracking and its primitives, see
-    [tutorial_backtracking.v] in this folder.
-*)
-
-
-(** *** 4.5 Notations
+    *** 4.5 Notations
 
     Ltac1 defines tactic notations using [Tactic Notation]:
 <<
