@@ -354,7 +354,6 @@ Ltac2 simplify_let_bis0 (h : ident) : unit :=
       let new_body := substnl [x] 0 body in
       change ($new_body) in h
   | _ => Control.zero (Tactic_failure (Some (fprintf "the type %t of %I is not a letin" type_h h)))
-
   end.
 
 Ltac2 Notation "simplify_let_bis" h(ident) := simplify_let_bis0 h.

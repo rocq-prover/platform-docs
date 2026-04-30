@@ -32,6 +32,7 @@
       - 4.3 Matching Terms and Goals
       - 4.4 Backtracking
       - 4.5 Notations
+    - 5. Small Case Study
 
     *** Prerequisites
 
@@ -622,17 +623,25 @@ Qed.
 
 (** *** 4.1 Foreign Function Interface
 
-    In Ltac1, all interaction with the Rocq kernel happens through built-in
+    In Ltac1, all interaction with the Rocq codebase happens through built-in
     tactics imported as a single opaque block -- no types, no control over what
     is in scope.
 
     Ltac2 has an explicit, typed Foreign Function Interface (FFI).
-    Kernel functions are exposed in a hierarchy of typed modules:
+    Rocq API -- kernel or higher levels fuynctions -- can be easily.
+    This enables easy access to API that were not accessible in Ltac1,
+    making Ltac2 much more expressive.
+
+    Many API are exposed in different modules in the core library available at:
+    https://github.com/rocq-prover/rocq/tree/master/theories/Ltac2
+
+    Most noticeable examples::
+    - [Control]: interact with the proof state (goal) and backtracking
     - [Constr]: inspect, build, and compare Rocq terms
     - [Std]: reduce terms, call unification, access the environment
-    - [Unsafe]: access the raw kernel representation of terms
-    - [Ind]: inspect inductive types and their constructors
-    - [Control]: interact with the proof state and backtracking
+    - [Fresh]: to create fresh [ident]
+    - [Unification]: to call unification in a controled way
+    - [Constr.Unsafe]: to access the raw kernel representation of terms
 
     The full core library is at:
     https://github.com/rocq-prover/rocq/tree/master/theories/Ltac2
@@ -641,17 +650,17 @@ Qed.
     reduces it to head-normal form:
 *)
 
-Ltac2 print_type (t : constr) : unit :=
-  printf "%t : %t" t (Constr.type t).
+Ltac2 print_hnf_type0 (h : ident) : unit :=
+  let th := Control.hyp h in
+  let ty_h := Constr.type th in
+  let hnf_ty_h := Std.eval_hnf ty_h in
+  printf "the hnf of the type of %I is %t" h hnf_ty_h.
 
-Ltac2 print_hnf_type (t : constr) : unit :=
-  print_type (Std.eval_hnf t).
+Ltac2 Notation "print_hnf_type" h(ident) := print_hnf_type0 h.
 
-Goal True.
-  print_hnf_type '(1 + 1).
-  exact I.
-Qed.
-
+Goal (let x := 1 in x = 1) -> False.
+  intros x. print_hnf_type x.
+Abort.
 
 (** *** 4.2 Quoting and Unquoting
 
@@ -661,7 +670,8 @@ Qed.
     when a name is mistaken for a Rocq term instead of an Ltac1 variable, or
     vice versa.
 
-    Ltac2 makes this boundary **explicit** through quoting and unquoting operators.
+    The goal was to ease user life but in practice this does not scale well.
+    To fix this, Ltac2 makes this boundary **explicit** through quoting and unquoting operators.
 
     **** 4.2.1 Quoting Rocq Terms
 
@@ -709,13 +719,14 @@ Qed.
 
 Ltac2 Eval Env.instantiate reference:(nat).
 
-(** For a complete treatment of quoting, see [tutorial_quoting.v] in this folder. *)
-
 
 (** *** 4.3 Matching Terms and Goals
 
-    Ltac1 provides [match goal] and [lazymatch goal] for pattern-matching the
-    proof state.
+    Ltac1 provides [lazymatch], [match] and [multimatch] for matching
+    patterns and goal. This still exists in Ltac2 but has changed syntax to
+    avoid confusion with the [match] for matching algebraic types.
+
+    The new syntax is [lazy_match!], [match!], and [multi_match!].
     Ltac2 provides three matching combinators:
 
     - [lazy_match! goal] -- like Ltac1 [lazymatch goal]: tries patterns in order,
@@ -723,64 +734,34 @@ Ltac2 Eval Env.instantiate reference:(nat).
     - [match! goal] -- like Ltac1 [match goal]: tries patterns in order, and
       **does** backtrack into a branch if it raises an exception.
     - [multi_match! goal] -- backtracks both into branches and into patterns.
-
-    The key syntactic differences from Ltac1:
-    - Write [lazy_match! goal with] instead of [lazymatch goal with]
-    - Hypothesis bindings [h : ?t] produce [h : ident] (the name) and
-      [t : constr] (the type). To recover the corresponding term, use
-      [Control.hyp h].
-
-    Here is a direct comparison.
-
-    In Ltac1:
-<<
-    Ltac show_hyp_type :=
-      lazymatch goal with
-      | H : ?T |- _ => idtac T
-      end.
->>
-    In Ltac2:
 *)
 
-Ltac2 show_hyp_type0 () :=
-  lazy_match! goal with
-  | [_h : ?t |- _] => printf "a hypothesis has type %t" t
-  end.
-
-Ltac2 Notation show_hyp_type := show_hyp_type0 ().
-
-Goal nat -> True.
-  intros H.
-  show_hyp_type.
-  exact I.
-Qed.
-
-(** With [match!], the match backtracks into the branch if it fails, which allows
-    trying every matching hypothesis in turn.
-    For example, here is a reimplementation of [assumption] that iterates over
-    all hypotheses, trying [exact] on each one, until one succeeds:
-*)
-
-Ltac2 my_assumption0 () :=
+Ltac2 print_all_hyp () :=
   match! goal with
-  | [h : _ |- _] => let term := Control.hyp h in exact $term
+  | [h : ?t |- _] => printf "the hypothesis %I has type %t" h t; fail
+  | [ |- _] => ()
   end.
 
-Ltac2 Notation my_assumption := my_assumption0 ().
+Goal nat -> bool -> 0 = 1 -> False.
+  intros. print_all_hyp ().
+Abort.
 
-Goal nat -> nat.
-  intros n. my_assumption.
-Qed.
-
-(** If the goal type does not match any hypothesis, [exact $term] fails for
-    every candidate, and the whole [match!] ultimately raises an exception:
+(** Another difference with Ltac1 is that a pattern containing variable binding
+    must now be explicitly, whereas it used to be optional and dynamically
+    figured out if not specified. For instance, to match [let var := ?expr in
+    ?body], one must one write [let var := ?expr in @?body var].
 *)
 
-Goal nat -> bool -> nat.
-  intros n b. my_assumption.
-Qed.
+Ltac2 print_body_hyp_letin () : unit :=
+  lazy_match! goal with
+  | [_ : let var := _ in @?body var |- _]  =>
+      printf "the body is expanded as a function :%t" body
+  end.
 
-(** For a deeper treatment of matching, see [tutorial_matching_terms_and_goals.v]. *)
+Goal forall x y : nat, (let a := x + 2 in let b := y + 1 in a = b) -> True.
+  intros. print_body_hyp_letin ().
+Abort.
+
 
 
 (** *** 4.4 Backtracking
@@ -878,8 +859,77 @@ Qed.
     just expands to a Ltac2 expression:
 *)
 
-Ltac2 Notation my_exact_assumption := my_exact_assumption0 ().
+(* Ltac2 Notation my_exact_assumption := my_exact_assumption0 ().
 
 Goal nat -> nat.
   intros n. my_exact_assumption.
-Qed.
+Qed. *)
+
+(** ** 5. Small Case Study
+
+    Let us now, consider a small study and write a tactic that [simplify_let]
+    that takes a hypothesis [h] whose type is a let-in [let var := expr in
+    body[var]], and turns it into [body[x']], where [x' := expr] is a new shared
+    definition introduced in the whole context and goal.
+
+    In Ltac1, it would have be written has:
+*)
+
+Ltac simplify_let H :=
+  let H := lazymatch goal with [ H : let var := ?t in _ |- _ ] => H end in
+  let type_h := type of H in
+  lazymatch type_h with
+  | let var := ?expr in ?body =>
+      idtac body;
+      let x := fresh "x" in
+      set (x := expr) in *;
+      change (body x) in H;
+      lazy head beta in H
+  end.
+
+(** In Ltac2, we need to:
+    - use small cap for variables
+    - now have [Control.hyp] to recover the body of h
+    - [Constr.type] is now a proper function rather than a ad-hoc construction
+    - use the [Fresh] module to create a fresh variables
+    - use [$] to unquote variables back to Rocq's world
+
+  In the end, this gives us a script that is similar but, but with a few
+  decoration, and a clearer semantic which can be written with or without
+  importing the modules.
+
+*)
+
+Import Control Constr.
+
+Ltac2 simplify_let (h : ident) : unit :=
+  let type_h := type (hyp h) in
+  lazy_match! type_h with
+  | let var := ?expr in @?body var =>
+      printf "the body is :%t" body;
+      let x := Fresh.in_goal @x in
+      set ($x := $expr) in *;
+      let x := hyp x in
+      change ($body $x) in h;
+      lazy head beta in h
+  end.
+
+(** The advantage of Ltac2 is that the FFI interface enables us to write script
+    we could not have in Ltac1. For instance, we can now use the [Constr.Unsafe]
+    API to write the [simplify_let] tactic by directly accessing the structure
+    of the term, and performing the substitution by hand rather than relying on
+    high-level tactics like [lazy head beta].
+*)
+Import Unsafe.
+
+Ltac2 simplify_let_bis (h : ident) : unit :=
+  let type_h := type (hyp h) in
+  match kind type_h with
+  | LetIn _ expr body =>
+      let x := Fresh.in_goal @x in
+      set ($x := $expr) in *;
+      let x := hyp x in
+      let new_body := substnl [x] 0 body in
+      change ($new_body) in h
+  | _ => fail
+  end.
