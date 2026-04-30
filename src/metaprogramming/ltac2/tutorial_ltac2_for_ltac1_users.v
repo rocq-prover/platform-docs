@@ -763,7 +763,6 @@ Goal forall x y : nat, (let a := x + 2 in let b := y + 1 in a = b) -> True.
 Abort.
 
 
-
 (** *** 4.4 Backtracking
 
     Ltac1 controls backtracking through:
@@ -772,8 +771,10 @@ Abort.
     - [fail n] (propagates failure [n] levels up through [match] branches)
 
     Ltac2 has more fine grained controls on backtracking.
-    Matching and combinators are still available, though [fail n] is not currently.
-    In additionn, Ltac2 has low-level primitives to manipulate values
+    Matching and combinators are still available.
+    However, [fail n] is no longer supported, it was a hack to deal with a lack
+    of good primitives to deal with backtracking.
+    Instead, Ltac2 has fine grained primitives to manipulate values
     as stream of possibilities, and backtracking.
     Combinators like [first] can then be reimplemented using theses primitives.
 
@@ -795,50 +796,91 @@ Abort.
 
     *** 4.5 Notations
 
-    Ltac1 defines tactic notations using [Tactic Notation]:
-<<
-    Tactic Notation "my_or" tactic(t1) "or" tactic(t2) :=
-      first [t1 | t2].
->>
-    Ltac2 has [Ltac2 Notation] with explicit argument parsers.
-    The crucial difference is that tactic arguments should be declared with
-    [thunk(tactic)] to avoid premature evaluation (see Section 3.2).
+    Ltac2 supports two kinds of custom syntax via [Ltac2 Notation].
+
+    An **abbreviation** is a [Ltac2 Notation] with no argument clause; it
+    simply expands to a fixed Ltac2 expression.
+    It does not add a new rule to the Ltac2 grammar nor new keywords:
+    the name is resolved as a plain identifier at parse time, so it cannot
+    cause parsing conflicts., e.g. with variable names.
+    It should be used when you want short name to a combinator or a
+    fixed tactic sequence.
+*)
+
+Ltac2 Notation "obvious" := first [assumption | reflexivity].
+
+Goal 1 = 1 /\ True.
+  split; obvious.
+Qed.
+
+(** A full [Ltac2 Notation] declares new parsing rule and keyworks which are
+    specified with ["tac_name"]. Arguments are then given with the syntax
+    [name_arg(X)] and [X] specifies that type of [name_arg].
 
     The available argument parsers include:
-    - [tactic] -- parse a tactic (evaluated eagerly; use [thunk] for tactics)
-    - [thunk(tactic)] -- parse a tactic, wrap it in [fun () => ...]
-    - [ident] -- parse an identifier
-    - [constr] -- parse a Rocq term
 
-    For infix notations, the separator keyword must not be a Rocq built-in, and
-    arguments must be delimited to avoid ambiguous greedy parsing.
-    A safe pattern is to use brackets, following the convention of the built-in
-    [first [tac1 | tac2]] notation:
+    There are first basic atoms:
+    - [tactic] / [tactic(n)] -- parse a tactic at precedence level [n]
+      (default 5); evaluated eagerly, so use [thunk] when the argument is a
+      tactic branch that must be delayed.
+    - [thunk(e)] -- parse [e], then wrap the result in [fun () => ...].
+      The most common form is [thunk(tactic)], which turns each tactic
+      argument into a [unit -> unit] thunk to prevent premature evaluation.
+    - [ident] -- parse a plain identifier (type [ident]).
+    - [constr] -- parse a Rocq term (type [constr]).
+    - [string] -- parse a string literal (type [string]).
+    - [int] -- parse an integer literal (type [int]).
+
+    There also are combinators for optional arguments and list of arguments:
+    - [list0(e)] -- parse a whitespace-separated, possibly empty, list of [e]
+    - [list0(e, "sep")] -- same, but with a literal keyword separator [sep].
+    - [list1(e)] / [list1(e, "sep")] -- like [list0] but require at least one
+      element. The notation [my_first [...]] above uses
+      [list1(thunk(tactic(6)), "|")] to parse one or more [|]-separated
+      tactic branches.
+    - [opt(e)] -- parse an optional argument [e] of type [option e]
+    - [seq(e1, e2, ...)] -- parse a fixed sequence of entries and bind them as a tuple.
+
+  As an example consider reimplementing [first] using the backtracking operators
+  as implemented in the CoreLib.
 *)
 
-Ltac2 my_or0 (t1 : unit -> unit) (t2 : unit -> unit) : unit :=
-  Control.plus t1 (fun _ => t2 ()).
+Ltac2 rec my_first0 tacs :=
+match tacs with
+| [] => Control.zero (Tactic_failure None)
+| tac :: tacs => Control.enter (fun _ => orelse tac (fun _ => my_first0 tacs))
+end.
 
-Ltac2 Notation "my_or" "[" t1(thunk(tactic)) "|" t2(thunk(tactic)) "]" :=
-  my_or0 t1 t2.
+(** To write a notation for it, we write:
 
-Goal True.
-  my_or [ exact I | fail ].
-Qed.
+    - ["my_first"] and ["["] / ["]"] ase literal keywords that the parser matches
+      verbatim; so that [my_first [...]] is unambiguous
 
-Goal True.
-  my_or [ fail | exact I ].
-Qed.
+    - [tacs] is the name bound in the body to the parsed argument
 
-(** For simple aliases with no extra parsing, use an abbreviation notation that
-    just expands to a Ltac2 expression:
+    - [list1(..., "|")] parses a non-empty list of elements separated by [|].
+
+    - [tactic(6)] parses one tactic branch at precedence level 6.
+      Level 6 is high enough to accept most compound tactics, yet low enough
+      that the parser stops at [|] and ["]"] instead of consuming them.
+
+    - [thunk(...)] wraps the parsed branch in [fun () => ...], so each branch
+      is turned into a thunk [unit -> unit].  Without [thunk], every branch
+      would be executed eagerly -- before [my_first0] even runs -- which would
+      defeat the whole purpose of trying alternatives one by one.
+
+    The result is that [my_first [t1 | t2 | t3]] is elaborated to
+    [my_first0 [(fun () => t1); (fun () => t2); (fun () => t3)]].
+    All together, it gives us the notation:
 *)
 
-(* Ltac2 Notation my_exact_assumption := my_exact_assumption0 ().
+Ltac2 Notation "my_first" "[" tacs(list0(thunk(tactic(6)), "|")) "]" := my_first0 tacs.
 
-Goal nat -> nat.
-  intros n. my_exact_assumption.
-Qed. *)
+Goal True.
+  my_first [ (printf "tactic 1"; fail) | (printf "tactic 2"; fail) | exact I ].
+Qed.
+
+
 
 (** ** 5. Small Case Study
 
