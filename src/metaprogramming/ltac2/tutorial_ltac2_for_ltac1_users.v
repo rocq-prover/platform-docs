@@ -28,8 +28,8 @@
       - 3.3 Effects: Printf and References
     - 4. Ltac2 as a Meta-Programming Language for Rocq
       - 4.1 Foreign Function Interface
-      - 4.2 Quoting and Unquoting
-      - 4.3 Matching Terms and Goals
+      - 4.2 Matching Terms and Goals
+      - 4.3 Quoting and Unquoting
       - 4.4 Backtracking
       - 4.5 Notations
     - 5. Small Case Study
@@ -608,17 +608,6 @@ Qed.
 
 
 
-
-
-
-
-
-(* THE FOLOWING CODE IS GENERATED USING DIRECTED IA.
-   IT STILL NEEDS TO BE REWRITTEN AND COMPLETED. *)
-
-(* -------------------------------------------------------------------------- *)
-
-
 (** ** 4. Ltac2 as a Meta-Programming Language for Rocq *)
 
 (** *** 4.1 Foreign Function Interface
@@ -662,65 +651,8 @@ Goal (let x := 1 in x = 1) -> False.
   intros x. print_hnf_type x.
 Abort.
 
-(** *** 4.2 Quoting and Unquoting
 
-    One of the main sources of confusion in Ltac1 is the implicit boundary
-    between Gallina (the language of Rocq terms) and Ltac1 meta-programs.
-    Ltac1 uses dynamic scoping rules to resolve names, leading to subtle bugs
-    when a name is mistaken for a Rocq term instead of an Ltac1 variable, or
-    vice versa.
-
-    The goal was to ease user life but in practice this does not scale well.
-    To fix this, Ltac2 makes this boundary **explicit** through quoting and unquoting operators.
-
-    **** 4.2.1 Quoting Rocq Terms
-
-    To embed a Rocq term into Ltac2 as a value of type [constr], use ['] (apostrophe).
-    In Ltac1, terms in patterns were implicitly quoted; there was no explicit notation:
-*)
-
-(* Ltac1:
-   Ltac use_T :=
-     match goal with
-     | _ : T |- _ => assumption  (* T is implicitly a Rocq term *)
-     end. *)
-
-Ltac2 Eval 'nat.
-Ltac2 Eval '(0 = 0).
-Ltac2 Eval '(forall n : nat, n + 0 = n).
-
-(** **** 4.2.2 Unquoting
-
-    To use a Ltac2 [constr] value back in a tactic position, unquote it with
-    [$] (dollar sign):
-*)
-
-Goal True /\ True.
-  let t := 'I in
-  split; exact $t; exact $t.
-Qed.
-
-(** **** 4.2.3 Identifiers and References
-
-    To create an [ident] value (the name of a hypothesis or variable), use
-    [@name] syntax.
-    To recover the corresponding term from a hypothesis name, use [Control.hyp]:
-*)
-
-Goal nat -> 0 = 0.
-  intros H.
-  printf "H : %t" (Constr.type (Control.hyp @H)).
-  reflexivity.
-Qed.
-
-(** [reference:(name)] creates a [Std.reference] pointing to a global constant.
-    Pass it to [Env.instantiate] to recover the corresponding Rocq term:
-*)
-
-Ltac2 Eval Env.instantiate reference:(nat).
-
-
-(** *** 4.3 Matching Terms and Goals
+(** *** 4.2 Matching Terms and Goals
 
     Ltac1 provides [lazymatch], [match] and [multimatch] for matching
     patterns and goal. This still exists in Ltac2 but has changed syntax to
@@ -761,6 +693,92 @@ Ltac2 print_body_hyp_letin () : unit :=
 Goal forall x y : nat, (let a := x + 2 in let b := y + 1 in a = b) -> True.
   intros. print_body_hyp_letin ().
 Abort.
+
+
+(** *** 4.3 Quoting and Unquoting
+
+    One of the main sources of confusion in Ltac1 is the implicit boundary
+    between Gallina (the language of Rocq terms) and Ltac1 meta-programs.
+    Ltac1 uses dynamic scoping rules to resolve names, leading to subtle bugs
+    when a name is mistaken for a Rocq term instead of an Ltac1 variable, or
+    vice versa.
+
+    The goal was to ease user life but in practice this does not scale well.
+    To fix this, Ltac2 makes this boundary **explicit** through quoting and unquoting operators.
+
+    For example, a tactic that splits a conjunction and closes both goals with [I]:
+*)
+
+Ltac ltac1_close_conj t := split; exact t.
+
+Set Default Proof Mode "Classic".
+
+Goal True /\ True.
+Proof.
+  ltac1_close_conj I.
+Qed.
+
+(** In Ltac2, every Rocq term must be explicitly **quoted** with ['] which
+    produces a Ltac2 term of type [constr], and **unquoted** to recover a Rocq term.
+
+    If we wanted to rewrite [ltac1_close_conj] in Ltac2, we would take variable
+    [t : constr] as argument, as [constr] is the only type we can manipulate.
+    Yet, to apply it to [exact] which expects a Rocq term, we need to unquote it.
+    This gives us:
+
+*)
+
+Ltac2 ltac2_close_conj0 (t : constr) := split; exact $t.
+
+Set Default Proof Mode "Ltac2".
+
+(** To be able to use it with a Rocq value, one then need to quote it to a [constr].
+    For instance, like the following.
+*)
+
+Goal True /\ True.
+Proof.
+  ltac2_close_conj0 'I.
+Qed.
+
+(** The quoting can be done automatically using a notation, we refer to the
+    following section for further explanations.
+*)
+
+Ltac2 Notation "ltac2_close_conj" t(constr) := ltac2_close_conj0 t.
+
+(** The same apply to Rocq identifier which can be created using [@].
+    In Ltac1, you could just write:
+*)
+
+Set Default Proof Mode "Classic".
+
+Ltac ltac1_print_hyp_type h :=
+  let T := type of h in idtac "type:" T.
+
+Goal nat -> False.
+Proof.
+  intros H.
+  ltac1_print_hyp_type H.
+Abort.
+
+(** In Ltac2, hypothesis names have the dedicated type [ident].
+    Write [@name] to create an [ident] literal, then use [Control.hyp] to
+    recover the corresponding [constr]:
+*)
+
+Set Default Proof Mode "Ltac2".
+
+Ltac2 ltac2_print_hyp_type (h : ident) :=
+  printf "type: %t" (Constr.type (Control.hyp h)).
+
+Goal nat -> False.
+Proof.
+  intros H.
+  Fail ltac2_print_hyp_type H.
+  ltac2_print_hyp_type @H.
+Abort.
+
 
 
 (** *** 4.4 Backtracking
