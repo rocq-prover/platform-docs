@@ -210,7 +210,7 @@ Qed.
 
     For instance, in a function [my_intro (id : ident) := ltac2:(intro id)], the
     [id] inside [ltac2:(...)] would be treated as the Ltac2 literal name [id],
-    not as the Ltac1 variable — so the tactic would always introduce a
+    not as the Ltac1 variable -- so the tactic would always introduce a
     hypothesis named [id] regardless of what was passed.
 
     To pass Ltac1 values across this boundary, one uses the binder syntax
@@ -320,8 +320,8 @@ Qed.
     The first option is to define the missing notation locally.
     In this case, one should also consider contributing it upstream to the Corelib.
     The underlying primitive lives in [Std] and expects an [ident list], so a
-    notation using the [list1(ident)] parser — which parses one or more
-    space-separated identifiers — is sufficient:
+    notation using the [list1(ident)] parser -- which parses one or more
+    space-separated identifiers -- is sufficient:
 *)
 
 Goal forall A, A -> A * A.
@@ -357,7 +357,7 @@ Abort.
     Ltac1, and Ltac2 variables are not in scope there. For instance, in a
     function [my_intro (id : ident) := ltac1:(intro id)], the [id] inside
     [ltac1:(...)] would be treated as the Ltac1 literal name [id], not as the
-    Ltac2 variable — so the tactic would always introduce a hypothesis named
+    Ltac2 variable -- so the tactic would always introduce a hypothesis named
     [id] regardless of what was passed.
 
     To pass Ltac2 values across this boundary, one uses the binder syntax
@@ -386,76 +386,100 @@ Qed.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-(* -------------------------------------------------------------------------- *)
-
-(* THE FOLOWING CODE IS GENERATED USING DIRECTED IA.
-   IT STILL NEEDS TO BE REWRITTEN AND COMPLETED. *)
-
-(* -------------------------------------------------------------------------- *)
-
-
-
-
-
-
-
-
 (** ** 3. Ltac2 is a Proper Functional Programming Language *)
+
+(** Ltac1 is a non standard tactic language with no type system, opaque
+      dynamically-typed values, and a non-standard evaluation strategy, making
+      tactics fragile and hard to predict and debug.
+
+    In constrast, Ltac2 is a proper programming language that belongs to the
+    well-known class of ML languages: it is a call-by-value functional language
+    with a Hindley–Milner type system.
+    Expressions have static types that can be inferred, hence ill-typed programs
+    are rejected at compile time rather than runtime, and are easy to write.
+    Moreover, evaluation is fully predictable thanks to call by-value semantic.
+    This makes Ltac2 tactics reliable and composable by design, opposed to Ltac1.
+*)
 
 (** *** 3.1 Types and Type Inference
 
     The most fundamental difference between Ltac1 and Ltac2 is that Ltac2 is a
-    statically typed language with Hindley–Milner type inference, very similar
-    to OCaml.
+    statically typed language with Hindley–Milner type system, similarly to OCaml.
 
     In Ltac1 there is no type system: values are opaque and type errors are only
-    caught at runtime with cryptic messages.
-    In Ltac2, every expression has a type, and ill-typed programs are rejected
-    before they are run.
-    Type annotations are optional — the type checker infers them — but can be
-    written for documentation or disambiguation.
+    caught at runtime with cryptic messages. In Ltac2, every expression has a
+    type, and ill-typed programs are rejected before they are run. Type
+    annotations are optional -- the type checker infers them -- but can be written
+    for documentation or disambiguation.
 
-    As in OCaml, constructor names must start with an **uppercase** letter
-    ([Some], [None], [S], [O], …), while variable and function names must start
-    with a **lowercase** letter.
-
-    Here is a simple typed function:
+    For instance, if we define an alias for addition of integer, Ltac2 will
+    automatically figure out the type is `int -> int -> int`:
 *)
 
 Ltac2 add (x : int) (y : int) : int := Int.add x y.
 Ltac2 Eval add 2 3.
+Fail Ltac2 Eval add 2 true.
 
 (** Ltac2 supports Hindley–Milner polymorphism.
-    The following identity function works at any type:
+    The following identity function works at any type as its type is [`a -> `a].
 *)
 
 Ltac2 my_id (x : 'a) : 'a := x.
 Ltac2 Eval my_id 42.
 Ltac2 Eval my_id true.
 
-(** Ltac2 provides standard data structures: lists, options, pairs, etc.
-    These are available from the Ltac2 standard library after the base import.
-    For example, here are a list computation and a polymorphic function over
-    options:
+(** Ltac2 provides primitive types both for p:
+    - [unit]: the unit type, with its single value [()].
+    - [bool]: Booleans, with values [true] and [false].
+    - [int]: machine integers (63-bit on a 64-bit platform).
+    - [string]: character strings.
+    - [ident]: Rocq identifiers (names of hypotheses, variables, …).
+    - [constr]: type of Rocq terms in Ltac2
+
+  Beyond the built-in types, you can define your own algebraic data
+  types with [Ltac2 Type]. As in OCaml, constructor names must start with an
+  **uppercase** letter ([Some], [None], [S], [O], …), while variable and
+  function names **must** start with a **lowercase** letter.
+  For instance, a type for arithmetic expressions can be defined by:
 *)
 
+Ltac2 Type rec expr :=
+  [ Num(int)
+  | Add(expr, expr)
+  | Mul(expr, expr)
+  ].
+
+Fail Ltac2 foo X := X.
+
+(** Functions can then be defined with the [rec] keyword for recursivity,
+    and [match] for pattern-matching similarly to OCaml.
+    Constructors are then refered without parentheses, like [Add a b].
+*)
+
+Ltac2 rec eval_expr (e : expr) : int :=
+  match e with
+  | Num n      => n
+  | Add a b => Int.add (eval_expr a) (eval_expr b)
+  | Mul a b => Int.mul (eval_expr a) (eval_expr b)
+  end.
+
+(* 1 + 2×3 = 7 *)
+Ltac2 Eval eval_expr (Add (Num 1) (Mul (Num 2) (Num 3))).
+
+(** The CoreLib provides some of the usual polymorphic types like [list] and
+      [option], and a few basic functions for it.
+*)
+
+Ltac2 Eval [1; 2; 3].
 Ltac2 Eval List.map (fun x => Int.add x 1) [1; 2; 3].
+
+(** [option] represents a possibly-absent value: [Some x] for presence and
+    [None] for absence.  Here is a function returning the head of a list as an
+    option, with pattern matching on the constructors of the [list] type: *)
 
 Ltac2 safe_head (l : 'a list) : 'a option :=
   match l with
-  | [] => None
+  | []     => None
   | h :: _ => Some h
   end.
 
@@ -465,16 +489,15 @@ Ltac2 Eval safe_head ([] : int list).
 
 (** *** 3.2 Call-by-Value Semantics and Thunking
 
-    Ltac1 has an unclear, hard-to-predict evaluation order.
-    Ltac2 is strictly **call-by-value**: function arguments are fully evaluated
-    before the function body is entered.
-    This makes behavior predictable and intuitive, but it has one important
-    consequence for passing tactics as arguments.
+    Ltac1 has an unclear, hard-to-predict evaluation order. Ltac2 is strictly
+    **call-by-value**: function arguments are fully evaluated before the
+    function body is entered.
 
-    If you pass a tactic [t] as an argument to a function, [t] is evaluated
-    — i.e. executed — immediately, before the body of the function has a chance
-    to decide whether to use it.
-    To illustrate, consider a function that ignores its argument and does nothing:
+    This makes behavior predictable and intuitive, but it has one important
+    consequence for passing tactics as arguments. If you pass a tactic [t] as an
+    argument to a function, [t] is evaluated -- i.e. executed -- immediately,
+    before the body of the function has a chance to decide whether to use it. To
+    illustrate this, consider a function that ignores its argument and does nothing:
 *)
 
 Ltac2 bad_ignore (_ : unit) : unit := ().
@@ -514,47 +537,85 @@ Goal True.
   exact I.
 Qed.
 
-(** For more details on thunking and the type of tactics, see
-    [tutorial_types_and_thunking.v] in this folder.
-*)
-
-
 (** *** 3.3 Effects: Printf and References
 
-    In Ltac1, [idtac] is the only way to print, and there is no mutable state.
-    Ltac2 has a proper typed [printf] and ML-style mutable references.
+  Compared to Ltac1, Ltac2 has proper effects, noticeably printing and references.
 
-    **** 3.3.1 Printf
+  **** 3.3.1 Printf
 
-    [printf] takes a format string with typed specifiers:
-    - [%t] formats a [constr] (a Rocq term)
-    - [%I] formats an [ident] (a hypothesis or variable name)
-    - [%s] formats a [string]
+  In Ltac1, [idtac] is the only way to print, and there is no mutable state.
+  Ltac2 has a proper typed [printf].
+
+  [printf] takes a format string with typed specifiers:
+  - << i >>: prints an [int]
+  - << I >>: prints an [ident]
+  - << s >>: prints a [string]
+  - << m >>: prints a [message]
+  - << t >>: prints a [constr] (a Rocq term)
+  - << a >>: prints a value of any type using a custom formatter [fun () x => ...]
+  - << A >>: same as << a >> but the formatter takes no [unit] argument
+  - << % >>: outputs a literal [%]
 
     This makes it much easier to inspect the proof state or debug automation
-    than the [idtac] approach:
+    than the [idtac] approach. For instance, here is a small tactic to
+    print the type of an hypothesis. We will explain the exact syntax
+    in the next section.
 *)
 
+Ltac2 print_type0 (h : ident) :=
+  printf "the type of the hypothesis %I is %t" h (Constr.type (Control.hyp h)).
+
+Ltac2 Notation "print_type" h(ident) := print_type0 h.
+
 Goal nat -> bool -> True.
-  intros n b.
-  printf "n has type %t" (Constr.type (Control.hyp @n));
-  printf "b has type %t" (Constr.type (Control.hyp @b)).
-  exact I.
-Qed.
+  intros a b.
+  print_type a.
+  print_type b.
+Abort.
 
 (** **** 3.3.2 Mutable References
 
-    Ltac2 provides ML-style mutable references of type ['a ref], with a
-    mutable [contents] field.
-    They can be used to accumulate state across multiple tactic calls — something
-    that is impossible in Ltac1.
+    Ltac2 provides ML-style mutable reference cells of type ['a ref].
+    A reference is a box holding a single mutable value of type ['a].
+    References make it possible to accumulate state across tactic calls —
+    something that pure functional code cannot express.
 
-    A reference is created as a record literal [{ contents := initial_value }],
-    its current value is read with [r.(contents)], and it is mutated with
-    the setter [Ref.set r new_value].
-    See the Ltac2 core library for the full [Ref] module API:
-    https://github.com/rocq-prover/rocq/blob/master/theories/Ltac2/Ref.v
+    The [Ref] module provides the following primitives:
+    - [Ref.ref v]: creates a fresh reference initialised to [v].
+    - [Ref.get r]: returns the current value of [r].
+    - [Ref.set r v]: replaces the value stored in [r] with [v].
+    - [Ref.update r f]: applies [f] to the current value and stores the result.
+
+    For [int ref] specifically, [Ref.incr r] and [Ref.decr r] add or subtract 1.
+
+    For example, here is a tactic that tracks how many hypotheses it clears:
 *)
+
+Goal forall (n m : nat), True.
+  intros n m.
+  let count := Ref.ref 0 in
+  clear n; Ref.incr count;
+  clear m; Ref.incr count;
+  printf "cleared %i hypotheses" (Ref.get count);
+  exact I.
+Qed.
+
+(** Note that mutations to a reference are **not rolled back on backtracking**.
+    If a branch modifies a reference and then fails, the modification persists.
+    Keep this in mind when combining references with backtracking tactics.
+*)
+
+
+
+
+
+
+
+
+(* THE FOLOWING CODE IS GENERATED USING DIRECTED IA.
+   IT STILL NEEDS TO BE REWRITTEN AND COMPLETED. *)
+
+(* -------------------------------------------------------------------------- *)
 
 
 (** ** 4. Ltac2 as a Meta-Programming Language for Rocq *)
@@ -562,7 +623,7 @@ Qed.
 (** *** 4.1 Foreign Function Interface
 
     In Ltac1, all interaction with the Rocq kernel happens through built-in
-    tactics imported as a single opaque block — no types, no control over what
+    tactics imported as a single opaque block -- no types, no control over what
     is in scope.
 
     Ltac2 has an explicit, typed Foreign Function Interface (FFI).
@@ -657,11 +718,11 @@ Ltac2 Eval Env.instantiate reference:(nat).
     proof state.
     Ltac2 provides three matching combinators:
 
-    - [lazy_match! goal] — like Ltac1 [lazymatch goal]: tries patterns in order,
+    - [lazy_match! goal] -- like Ltac1 [lazymatch goal]: tries patterns in order,
       does **not** backtrack into a branch once a pattern has matched.
-    - [match! goal] — like Ltac1 [match goal]: tries patterns in order, and
+    - [match! goal] -- like Ltac1 [match goal]: tries patterns in order, and
       **does** backtrack into a branch if it raises an exception.
-    - [multi_match! goal] — backtracks both into branches and into patterns.
+    - [multi_match! goal] -- backtracks both into branches and into patterns.
 
     The key syntactic differences from Ltac1:
     - Write [lazy_match! goal with] instead of [lazymatch goal with]
@@ -732,12 +793,12 @@ Qed.
     Ltac2 models backtracking as **streams of possibilities** and exposes three
     explicit low-level primitives:
 
-    - [Control.zero : exn -> 'a] — raises an exception and triggers backtracking.
+    - [Control.zero : exn -> 'a] -- raises an exception and triggers backtracking.
       This is the primitive underlying Ltac2 [fail].
-    - [Control.plus : (unit -> 'a) -> (exn -> 'a) -> 'a] — stacks a backtracking
+    - [Control.plus : (unit -> 'a) -> (exn -> 'a) -> 'a] -- stacks a backtracking
       choice: try the first thunk; on exception, try the handler.
       This is the primitive underlying [tac1 + tac2].
-    - [Control.case : (unit -> 'a) -> ('a * (exn -> 'a)) result] — inspects
+    - [Control.case : (unit -> 'a) -> ('a * (exn -> 'a)) result] -- inspects
       whether a tactic has at least one success without consuming it.
 
     Note that in Ltac2, [fail] is defined as
@@ -788,10 +849,10 @@ Abort.
     [thunk(tactic)] to avoid premature evaluation (see Section 3.2).
 
     The available argument parsers include:
-    - [tactic] — parse a tactic (evaluated eagerly; use [thunk] for tactics)
-    - [thunk(tactic)] — parse a tactic, wrap it in [fun () => ...]
-    - [ident] — parse an identifier
-    - [constr] — parse a Rocq term
+    - [tactic] -- parse a tactic (evaluated eagerly; use [thunk] for tactics)
+    - [thunk(tactic)] -- parse a tactic, wrap it in [fun () => ...]
+    - [ident] -- parse an identifier
+    - [constr] -- parse a Rocq term
 
     For infix notations, the separator keyword must not be a Rocq built-in, and
     arguments must be delimited to avoid ambiguous greedy parsing.
