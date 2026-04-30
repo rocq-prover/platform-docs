@@ -22,7 +22,7 @@
     - 2. Using Ltac2 to Write Proofs
       - 2.1 Using Ltac2 in the Ltac1 Proof Mode
       - 2.2 Using the Ltac2 Proof Mode
-    - 3. Ltac2 is a Proper Functional Programming Language
+    - 3. Ltac2 Is a Proper Functional Programming Language
       - 3.1 Types and Type Inference
       - 3.2 Call-by-Value Semantics and Thunking
       - 3.3 Effects: Printf and References
@@ -49,12 +49,12 @@
 
     *** 1.1 A Brief History of Ltac1
 
-    Ltac1 was introduce in 2000 (Coq 7.0) to enable users to write their own
+    Ltac1 was introduced in 2000 (Coq 7.0) to enable users to write their own
     tactics by combining existing primitive tactics using an expressive set of
     combinators.
 
     For instance, users have been using Ltac1 to write variants of existing
-    tactics domain specific automation tactic.
+    tactics or domain-specific automation tactics.
 
     Ltac1 was key in the success of Rocq, and of many formalization efforts as
     it enabled us to write proofs in a more incremental, efficient and more
@@ -63,22 +63,22 @@
 
     *** 1.2 Design Flaws of Ltac1
 
-    Yet, Ltac1 was not planned for so advanced uses and suffer designed flaws.
+    Yet, Ltac1 was not planned for such advanced uses and suffered from design flaws.
 
-    1. At the time, there were no idea of what a good tactic language ought to be
+    1. At the time, there was no idea of what a good tactic language ought to be
        and Ltac1 was not designed following current PL conventions
 
-    2. The development of Ltac1 was not carefully planned, and features have
-       added piecewise over times by different contributors.
+    2. The development of Ltac1 was not carefully planned, and features have been
+       added piecemeal over time by different contributors.
        Consequently, the language is far from well-designed, uniform, or well
        implemented, making improvements and every day use complicated.
 
-    3. Ltac1 tried to accomodate two contradictory feature: for tactics
-       to be both automagical and predictible.
-       To do so, Ltac1 implements many dynamic decision procedures to facilitates
-       writing tactics that works well for small example but do not scale well.
+    3. Ltac1 tried to accommodate two contradictory features: for tactics
+       to be both automagical and predictable.
+       To do so, Ltac1 implements many dynamic decision procedures to facilitate
+       writing tactics that work well for small examples but do not scale well.
 
-    With experirence, there are several well-known design flaws with Ltac1:
+    With experience, there are several well-known design flaws with Ltac1:
 
     - **No type system.** Ltac1 is completely untyped. Any value can be passed to
       any function, and type errors are only caught at runtime, often with cryptic
@@ -88,7 +88,7 @@
     - **No data structures.** Ltac1 has no lists, no records, and no algebraic
       types. All state must be threaded through the goal or through side channels.
 
-    - **Unclear Semantic** It is hard to predict when a tactic will be
+    - **Unclear Semantics.** It is hard to predict when a tactic will be
       evaluated, or whether a name refers to a Rocq term or an Ltac1 variable.
       This leads to subtle and hard-to-diagnose bugs.
 
@@ -105,7 +105,7 @@
 
     *** 1.3 Ltac2
 
-    Ltac2 is designed to be the replacement of Ltac1, and offer both a
+    Ltac2 is designed to be the replacement of Ltac1, and offers both a
     reliable and scalable tactic language for Rocq, while being as backward
     compatible as possible.
 
@@ -116,10 +116,10 @@
       and a clear call-by-value semantic.
 
     - It has an explicit typed Foreign Function Interface.
-      This makes it easy to extend Ltac2 to expose and access primitive like unification,
+      This makes it easy to extend Ltac2 to expose and access primitives like unification,
       that were not accessible before, while providing better documentation for it.
-      As a consequence, it is possible to do more stuff in Ltac2 than in Ltac1.
-      For instance, it is now possible to manipulate to goal state, and modify
+      As a consequence, it is possible to do more in Ltac2 than in Ltac1.
+      For instance, it is now possible to manipulate the goal state, and modify
       the set of goals under focus etc.
 
     - Quoting and unquoting between Rocq terms (Gallina) and Ltac2 values is now
@@ -143,7 +143,7 @@
     more exposed primitives in more recent versions of Rocq.
     See https://github.com/rocq-prover/rocq/tree/master/theories/Ltac2 for
     the master branch of Rocq.
-    Most noticeably, Ltac2 still lacks notations for some for the basic tactics.
+    Most noticeably, Ltac2 still lacks notations for some of the basic tactics.
 
     For the moment, Ltac2 is not loaded by default with the Prelude.
     It needs to be imported with [From Ltac2 Require Import Ltac2].
@@ -154,28 +154,28 @@ From Ltac2 Require Import Ltac2 Printf Option.
 
 (** ** 2. Using Ltac2 to Write Proofs
 
-    Before discussing the Ltac2 language itself let us consider how to
-    the differences between Ltac1 and Ltac2 proof mode, and how to use on
+    Before discussing the Ltac2 language itself, let us consider
+    the differences between Ltac1 and Ltac2 proof modes, and how to use one
     in the other.
 
     *** 2.1 Using Ltac2 in the Ltac1 Proof Mode
 
     The main use for Ltac2 is to write predictable tactics.
     Yet, you do not need to port your whole development to Ltac2 to benefit from Ltac2.
-    You can write new script in Ltac2 but call it in the usual Ltac1 proof mode.
+    You can write new scripts in Ltac2 but call them in the usual Ltac1 proof mode.
     This lets you enjoy Ltac2's type safety and expressiveness while
     leaving all existing proofs untouched, and avoid dealing with differences
     between Ltac1 and Ltac2's proof mode.
 
     Consequently, a natural approach when migrating a large development is:
-    1. Write new Ltac1 scipt or port them existing one in Ltac2.
+    1. Write new Ltac1 scripts or port existing ones in Ltac2.
     2. Import them into Ltac1 via [ltac2:(...)].
     3. Use them in existing proof scripts without further changes.
 
-    Importing Ltac2 automatically set the proof mode to Ltac2.
+    Importing Ltac2 automatically sets the proof mode to Ltac2.
     You can decide to keep using Ltac1 proof mode by using [Set Proof Mode "Classic"].
-    Conversly [Set Proof Mode "Ltac2"] to use the Ltac2 proof mode.
-    You can then write script in Ltac2, and call them in a Ltac1 proof using
+    Conversely, [Set Proof Mode "Ltac2"] to use the Ltac2 proof mode.
+    You can then write scripts in Ltac2, and call them in a Ltac1 proof using
     [ltac2:()] wrapper.
 
     As an example, let us leverage the [printf] function for Ltac2.
@@ -219,7 +219,7 @@ Qed.
     arguments and binds them under the names [x1 .. xn] in the Ltac2 scope.
     Inside the expression, [x1 .. xn] have type [Ltac1.t] and are converted to
     typed Ltac2 values using helpers such as [Ltac1.to_constr] and [Ltac1.to_ident].
-    The ltac2 wrapper must then be defined as a letin and applied due to Ltac1 inner working.
+    The Ltac2 wrapper must then be defined as a let-in and applied, due to Ltac1's inner workings.
 *)
 
 Set Default Proof Mode "Classic".
@@ -239,11 +239,11 @@ Qed.
 (** *** 2.2 Using the Ltac2 Proof Mode
 
     The first possibility is to use Ltac2 proof mode directly.
-    It is very similar to Ltac1 outside of a few syntax change.
+    It is very similar to Ltac1 outside of a few syntax changes.
 
-    Most noticeably dispatching tactics has changed syntax, and parsing
-    In Ltac1, when a tactic create more than one new goal, you can specify which
-    tactic to apply with the syntax [tac2; [tac31 | tac32]].
+    Most noticeably, the dispatching syntax has changed.
+    In Ltac1, when a tactic creates more than one new goal, you can specify which
+    tactic to apply with the syntax [tac1; [tac21 | tac22]].
     Moreover, [tac1; tac2; [tac31 | tac32]] is parsed as
     [(tac1; tac2); [tac31 | tac32]].
 *)
@@ -256,10 +256,10 @@ Proof.
   split; split; [exact HP | exact HQ | exact HR | exact HS].
 Qed.
 
-(** In Ltac2, this now written with the syntax [tac1; [tac21 | tac22 ]] in order
+(** In Ltac2, this is now written with the syntax [tac1 > [tac21 | tac22]] in order
     to avoid syntax conflict with ???. Moreover, [tac1; tac2; [tac31 | tac32]]
-    is now parsed as [tac1; (tac2; [tac31 | tac32])]  as Ltac2 no longer
-    automatically delay tactic execution.
+    is now parsed as [tac1; (tac2; [tac31 | tac32])] as Ltac2 no longer
+    automatically delays tactic execution.
 
     Consequently, if [tac1] generates multiple goals, the dispatcher will
     attempt to apply the list [tac31|tac32] to the subgoals generated by [tac2]
@@ -387,19 +387,19 @@ Qed.
 
 
 
-(** ** 3. Ltac2 is a Proper Functional Programming Language *)
+(** ** 3. Ltac2 Is a Proper Functional Programming Language *)
 
 (** Ltac1 is a non standard tactic language with no type system, opaque
       dynamically-typed values, and a non-standard evaluation strategy, making
       tactics fragile and hard to predict and debug.
 
-    In constrast, Ltac2 is a proper programming language that belongs to the
+    In contrast, Ltac2 is a proper programming language that belongs to the
     well-known class of ML languages: it is a call-by-value functional language
     with a Hindley–Milner type system.
     Expressions have static types that can be inferred, hence ill-typed programs
     are rejected at compile time rather than runtime, and are easy to write.
-    Moreover, evaluation is fully predictable thanks to call by-value semantic.
-    This makes Ltac2 tactics reliable and composable by design, opposed to Ltac1.
+    Moreover, evaluation is fully predictable thanks to call-by-value semantics.
+    This makes Ltac2 tactics reliable and composable by design, as opposed to Ltac1.
 *)
 
 (** *** 3.1 Types and Type Inference
@@ -429,7 +429,7 @@ Ltac2 my_id (x : 'a) : 'a := x.
 Ltac2 Eval my_id 42.
 Ltac2 Eval my_id true.
 
-(** Ltac2 provides primitive types both for p:
+(** Ltac2 provides the following primitive types:
     - [unit]: the unit type, with its single value [()].
     - [bool]: Booleans, with values [true] and [false].
     - [int]: machine integers (63-bit on a 64-bit platform).
@@ -454,7 +454,7 @@ Fail Ltac2 foo X := X.
 
 (** Functions can then be defined with the [rec] keyword for recursivity,
     and [match] for pattern-matching similarly to OCaml.
-    Constructors are then refered without parentheses, like [Add a b].
+    Constructors are then referred to without parentheses, like [Add a b].
 *)
 
 Ltac2 rec eval_expr (e : expr) : int :=
@@ -468,7 +468,7 @@ Ltac2 rec eval_expr (e : expr) : int :=
 Ltac2 Eval eval_expr (Add (Num 1) (Mul (Num 2) (Num 3))).
 
 (** The CoreLib provides some of the usual polymorphic types like [list] and
-      [option], and a few basic functions for it.
+      [option], and a few basic functions for them.
 *)
 
 Ltac2 Eval [1; 2; 3].
@@ -617,19 +617,19 @@ Qed.
     is in scope.
 
     Ltac2 has an explicit, typed Foreign Function Interface (FFI).
-    Rocq API -- kernel or higher levels fuynctions -- can be easily.
-    This enables easy access to API that were not accessible in Ltac1,
+    Rocq API -- kernel or higher-level functions -- can be easily exposed.
+    This enables easy access to APIs that were not accessible in Ltac1,
     making Ltac2 much more expressive.
 
-    Many API are exposed in different modules in the core library available at:
+    Many APIs are exposed in different modules in the core library available at:
     https://github.com/rocq-prover/rocq/tree/master/theories/Ltac2
 
-    Most noticeable examples::
+    Most notable examples:
     - [Control]: interact with the proof state (goal) and backtracking
     - [Constr]: inspect, build, and compare Rocq terms
     - [Std]: reduce terms, call unification, access the environment
     - [Fresh]: to create fresh [ident]
-    - [Unification]: to call unification in a controled way
+    - [Unification]: to call unification in a controlled way
     - [Constr.Unsafe]: to access the raw kernel representation of terms
 
     The full core library is at:
@@ -655,7 +655,7 @@ Abort.
 (** *** 4.2 Matching Terms and Goals
 
     Ltac1 provides [lazymatch], [match] and [multimatch] for matching
-    patterns and goal. This still exists in Ltac2 but has changed syntax to
+    patterns and goals. This still exists in Ltac2 but has changed syntax to
     avoid confusion with the [match] for matching algebraic types.
 
     The new syntax is [lazy_match!], [match!], and [multi_match!].
@@ -678,10 +678,10 @@ Goal nat -> bool -> 0 = 1 -> False.
   intros. print_all_hyp ().
 Abort.
 
-(** Another difference with Ltac1 is that a pattern containing variable binding
-    must now be explicitly, whereas it used to be optional and dynamically
+(** Another difference with Ltac1 is that a pattern containing variable bindings
+    must now be explicit, whereas it used to be optional and dynamically
     figured out if not specified. For instance, to match [let var := ?expr in
-    ?body], one must one write [let var := ?expr in @?body var].
+    ?body], one must write [let var := ?expr in @?body var].
 *)
 
 Ltac2 print_body_hyp_letin () : unit :=
@@ -703,7 +703,7 @@ Abort.
     when a name is mistaken for a Rocq term instead of an Ltac1 variable, or
     vice versa.
 
-    The goal was to ease user life but in practice this does not scale well.
+    The goal was to ease users' lives, but in practice this does not scale well.
     To fix this, Ltac2 makes this boundary **explicit** through quoting and unquoting operators.
 
     For example, a tactic that splits a conjunction and closes both goals with [I]:
@@ -747,7 +747,7 @@ Qed.
 
 Ltac2 Notation "ltac2_close_conj" t(constr) := ltac2_close_conj0 t.
 
-(** The same apply to Rocq identifier which can be created using [@].
+(** The same applies to Rocq identifiers, which can be created using [@].
     In Ltac1, you could just write:
 *)
 
@@ -784,7 +784,7 @@ Abort.
 (** *** 4.4 Backtracking
 
     Ltac1 controls backtracking through:
-    - [match goal] (backtracks into branches on failure, and co),
+    - [match goal] (backtracks into branches on failure, etc.),
     - Combinators like [first [tac1 | tac2 | ...]]
     - [fail n] (propagates failure [n] levels up through [match] branches)
 
@@ -794,7 +794,7 @@ Abort.
     of good primitives to deal with backtracking.
     Instead, Ltac2 has fine grained primitives to manipulate values
     as stream of possibilities, and backtracking.
-    Combinators like [first] can then be reimplemented using theses primitives.
+    Combinators like [first] can then be reimplemented using these primitives.
 
     Most users do not have the needs for these primitives, and the existing
     combinators are enough. We mention them briefly, and refer to the
@@ -806,7 +806,7 @@ Abort.
     - [Control.plus : (unit -> 'a) -> (exn -> 'a) -> 'a] -- stacks a backtracking
       choice: try the first thunk; on exception, try the handler.
       This is the primitive underlying [tac1 + tac2], but it is finer
-      since different decision can be performed depending on the exception raised.
+      since different decisions can be performed depending on the exception raised.
 
     - [Control.case : (unit -> 'a) -> ('a * (exn -> 'a)) result] -- inspects
       whether a tactic has at least one success without consuming it.
@@ -820,8 +820,8 @@ Abort.
     simply expands to a fixed Ltac2 expression.
     It does not add a new rule to the Ltac2 grammar nor new keywords:
     the name is resolved as a plain identifier at parse time, so it cannot
-    cause parsing conflicts., e.g. with variable names.
-    It should be used when you want short name to a combinator or a
+    cause parsing conflicts, e.g. with variable names.
+    It should be used when you want a short name for a combinator or a
     fixed tactic sequence.
 *)
 
@@ -831,7 +831,7 @@ Goal 1 = 1 /\ True.
   split; obvious.
 Qed.
 
-(** A full [Ltac2 Notation] declares new parsing rule and keyworks which are
+(** A full [Ltac2 Notation] declares new parsing rules and keywords which are
     specified with ["tac_name"]. Arguments are then given with the syntax
     [name_arg(X)] and [X] specifies that type of [name_arg].
 
@@ -871,7 +871,7 @@ end.
 
 (** To write a notation for it, we write:
 
-    - ["my_first"] and ["["] / ["]"] ase literal keywords that the parser matches
+    - ["my_first"] and ["["] / ["]"] are literal keywords that the parser matches
       verbatim; so that [my_first [...]] is unambiguous
 
     - [tacs] is the name bound in the body to the parsed argument
@@ -902,12 +902,12 @@ Qed.
 
 (** ** 5. Small Case Study
 
-    Let us now, consider a small study and write a tactic that [simplify_let]
+    Let us now consider a small case study and write a tactic [simplify_let]
     that takes a hypothesis [h] whose type is a let-in [let var := expr in
     body[var]], and turns it into [body[x']], where [x' := expr] is a new shared
     definition introduced in the whole context and goal.
 
-    In Ltac1, it would have be written has:
+    In Ltac1, it would have been written as:
 *)
 
 Ltac simplify_let H :=
@@ -923,14 +923,14 @@ Ltac simplify_let H :=
   end.
 
 (** In Ltac2, we need to:
-    - use small cap for variables
-    - now have [Control.hyp] to recover the body of h
-    - [Constr.type] is now a proper function rather than a ad-hoc construction
-    - use the [Fresh] module to create a fresh variables
+    - use lowercase for variables
+    - use [Control.hyp] to recover the body of h
+    - [Constr.type] is now a proper function rather than an ad-hoc construction
+    - use the [Fresh] module to create fresh variables
     - use [$] to unquote variables back to Rocq's world
 
-  In the end, this gives us a script that is similar but, but with a few
-  decoration, and a clearer semantic which can be written with or without
+  In the end, this gives us a script that is similar but with a few
+  decorations and clearer semantics, which can be written with or without
   importing the modules.
 
 *)
@@ -949,7 +949,7 @@ Ltac2 simplify_let (h : ident) : unit :=
       lazy head beta in h
   end.
 
-(** The advantage of Ltac2 is that the FFI interface enables us to write script
+(** The advantage of Ltac2 is that the FFI interface enables us to write scripts
     we could not have in Ltac1. For instance, we can now use the [Constr.Unsafe]
     API to write the [simplify_let] tactic by directly accessing the structure
     of the term, and performing the substitution by hand rather than relying on
