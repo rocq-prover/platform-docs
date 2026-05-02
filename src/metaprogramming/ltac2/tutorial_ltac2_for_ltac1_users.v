@@ -12,7 +12,7 @@
     familiar with Ltac1. We mainly focus on the differences with Ltac1, and how
     to translate your existing Ltac1 knowledge into Ltac2 idioms.
 
-    *** Table of content
+    *** Table of contents
 
     - 1. Introduction
       - 1.1 A Brief History of Ltac1
@@ -67,7 +67,7 @@
     Yet, Ltac1 was not planned for such advanced uses and suffered from design flaws.
 
     1. At the time, there was no idea of what a good tactic language ought to be
-       and Ltac1 was not designed following current PL conventions
+       and Ltac1 was not designed following current PL conventions.
 
     2. The development of Ltac1 was not carefully planned, and features have been
        added piecemeal over time by different contributors.
@@ -83,7 +83,7 @@
 
     - **No type system.** Ltac1 is completely untyped. Any value can be passed to
       any function, and type errors are only caught at runtime, often with cryptic
-      error messages. This makes writing large library and tactics and debugging
+      error messages. This makes writing large libraries and tactics and debugging
       very tedious.
 
     - **No data structures.** Ltac1 has no lists, no records, and no algebraic
@@ -114,9 +114,9 @@
 
     - It is a proper typed functional programming language of the Hindley–Milner
       family, similarly to OCaml, with type inference, algebraic data types,
-      and a clear call-by-value semantic.
+      and a clear call-by-value semantics.
 
-    - It has an explicit typed Foreign Function Interface.
+    - It has an explicitly typed Foreign Function Interface.
       This makes it easy to extend Ltac2 to expose and access primitives like unification,
       that were not accessible before, while providing better documentation for it.
       As a consequence, it is possible to do more in Ltac2 than in Ltac1.
@@ -124,7 +124,7 @@
       the set of goals under focus etc.
 
     - Quoting and unquoting between Rocq terms (Gallina) and Ltac2 values is now
-      explicit and syntactically marked. It no longer relies on a hard to predict
+      explicit and syntactically marked. It no longer relies on a hard-to-predict
       dynamic decision procedure.
 
     - Backtracking is modelled as streams of possibilities, with fine-grained
@@ -144,7 +144,7 @@
     more exposed primitives in more recent versions of Rocq.
     See https://github.com/rocq-prover/rocq/tree/master/theories/Ltac2 for
     the master branch of Rocq.
-    Most noticeably, Ltac2 still lacks notations for some of the basic tactics.
+    Most notably, Ltac2 still lacks notations for some of the basic tactics.
 
     For the moment, Ltac2 is not loaded by default with the Prelude.
     It needs to be imported with [From Ltac2 Require Import Ltac2].
@@ -169,7 +169,7 @@ From Ltac2 Require Import Ltac2 Printf Option.
     between Ltac1 and Ltac2's proof mode.
 
     Consequently, a natural approach when migrating a large development is:
-    1. Write new Ltac1 scripts or port existing ones in Ltac2.
+    1. Write new scripts in Ltac2 or port existing Ltac1 ones to Ltac2.
     2. Import them into Ltac1 via [ltac2:(...)].
     3. Use them in existing proof scripts without further changes.
 
@@ -401,8 +401,8 @@ Qed.
     In contrast, Ltac2 is a proper programming language that belongs to the
     well-known class of ML languages: it is a call-by-value functional language
     with a Hindley–Milner type system.
-    Expressions have static types that can be inferred, hence ill-typed programs
-    are rejected at compile time rather than runtime, and are easy to write.
+    Expressions have static types that can be inferred, so ill-typed programs
+    are rejected at compile time rather than at runtime.
     Moreover, evaluation is fully predictable thanks to call-by-value semantics.
     This makes Ltac2 tactics reliable and composable by design, as opposed to Ltac1.
 *)
@@ -418,7 +418,7 @@ Qed.
     annotations are optional -- the type checker infers them -- but can be written
     for documentation or disambiguation.
 
-    For instance, if we define an alias for addition of integer, Ltac2 will
+    For instance, if we define an alias for integer addition, Ltac2 will
     automatically figure out the type is `int -> int -> int`:
 *)
 
@@ -432,10 +432,10 @@ Fail Ltac2 Eval add 2 true.
 
     For instance, [∀ 'a, 'a -> 'a] is a valid polymorphic type: the quantifier
     is at the front, and the function works at any type ['a]. It is the type of
-    a function that takes an input of a type ['a] and return a value fo the same type.
+    a function that takes an input of type ['a] and returns a value of the same type.
 
     However, [∀ 'a, (∀ 'b, 'b -> 'b) -> 'a] is not valid because ['b] is
-    quantified inside the type. Note, it is not the same as  [∀ 'a 'b, ('b -> 'b) -> 'a].
+    quantified inside the type. Note that it is not the same as [∀ 'a 'b, ('b -> 'b) -> 'a].
 *)
 
 Ltac2 my_id (x : 'a) : 'a := x.
@@ -448,7 +448,7 @@ Ltac2 Eval my_id true.
     - [int]: machine integers (63-bit on a 64-bit platform).
     - [string]: character strings.
     - [ident]: Rocq identifiers (names of hypotheses, variables, …).
-    - [constr]: type of Rocq terms in Ltac2
+    - [constr]: type of Rocq terms in Ltac2.
 
   Beyond the built-in types, you can define your own algebraic data
   types with [Ltac2 Type]. As in OCaml, constructor names must start with an
@@ -465,7 +465,7 @@ Ltac2 Type rec expr :=
 
 Fail Ltac2 foo X := X.
 
-(** Functions can then be defined with the [rec] keyword for recursivity,
+(** Functions can then be defined with the [rec] keyword for recursion,
     and [match] for pattern-matching similarly to OCaml.
     Constructors are then referred to without parentheses, like [Add a b].
 *)
@@ -553,7 +553,7 @@ Qed.
 
 (** *** 3.3 Effects: Printf and References
 
-  Compared to Ltac1, Ltac2 has proper effects, noticeably printing and references.
+  Compared to Ltac1, Ltac2 has proper effects, notably printing and references.
 
   **** 3.3.1 Printf
 
@@ -572,7 +572,7 @@ Qed.
 
     This makes it much easier to inspect the proof state or debug automation
     than the [idtac] approach. For instance, here is a small tactic to
-    print the type of an hypothesis. We will explain the exact syntax
+    print the type of a hypothesis. We will explain the exact syntax
     in the next section.
 *)
 
@@ -638,9 +638,9 @@ Qed.
 
 Ltac2 Type exn ::= [ OutOfFuel (message option) ].
 
-(** To easiest method to build an object of type [message] is to use [fprintf]
-    that works exactly as [printf] except it returns an object of type
-    [message] instead of printing it
+(** The easiest method to build a value of type [message] is to use [fprintf],
+    which works exactly like [printf] except it returns a [message] value
+    instead of printing it.
 
     There are two primitives to raise an exception, with different semantics:
 
@@ -657,11 +657,11 @@ Abort.
 (** 2. [Control.zero : exn -> 'a] -- raises a **backtrackable** exception.
       It signals that the current branch has no solution, which triggers
       backtracking: [Control.plus] will try the alternative branch, and [try]
-      will silently recover. Checkout the corresponding section for more information.
+      will silently recover. See the corresponding section for more information.
 *)
 
 Goal False.
-  try (Control.zero (OutOfFuel (Some (fprintf "should succed and print nothing")))).
+  try (Control.zero (OutOfFuel (Some (fprintf "should succeed and print nothing")))).
 Abort.
 
 
@@ -725,8 +725,8 @@ Abort.
       **does** backtrack into a branch if it raises an exception.
     - [multi_match! goal] -- backtracks both into branches and into patterns.
 
-    Though, it is common in Ltac1 to use cap variables for hypotheses, like [H],
-    in Ltac2, you need to use **lowercase** ones.
+    Although it is common in Ltac1 to use uppercase variables for hypotheses, like [H],
+    in Ltac2 you need to use **lowercase** ones.
 *)
 
 Ltac2 print_all_hyp () :=
@@ -748,7 +748,7 @@ Abort.
 Ltac2 print_body_hyp_letin () : unit :=
   lazy_match! goal with
   | [_ : let var := _ in @?body var |- _]  =>
-      printf "the body is expanded as a function :%t" body
+      printf "the body is expanded as a function: %t" body
   end.
 
 Goal forall x y : nat, (let a := x + 2 in let b := y + 1 in a = b) -> True.
@@ -849,15 +849,15 @@ Abort.
     - Combinators like [first [tac1 | tac2 | ...]]
     - [fail n] (propagates failure [n] levels up through [match] branches)
 
-    Ltac2 has more fine grained controls on backtracking.
+    Ltac2 has more fine-grained controls on backtracking.
     Matching and combinators are still available.
-    However, [fail n] is no longer supported, it was a hack to deal with a lack
-    of good primitives to deal with backtracking.
-    Instead, Ltac2 has fine grained primitives to manipulate values
-    as stream of possibilities, and backtracking.
+    However, [fail n] is no longer supported; it was a hack to deal with the lack
+    of good primitives for backtracking.
+    Instead, Ltac2 has fine-grained primitives to manipulate values
+    as streams of possibilities and backtracking.
     Combinators like [first] can then be reimplemented using these primitives.
 
-    Most users do not have the needs for these primitives, and the existing
+    Most users do not need these primitives, and the existing
     combinators are enough. We mention them briefly, and refer to the
     documentation for more details. The three primitives are:
 
@@ -900,7 +900,7 @@ Qed.
 
     The available argument parsers include:
 
-    There are first basic atoms:
+    The basic atoms are:
     - [tactic] / [tactic(n)] -- parse a tactic at precedence level [n]
       (default 5); evaluated eagerly, so use [thunk] when the argument is a
       tactic branch that must be delayed.
