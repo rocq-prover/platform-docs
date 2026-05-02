@@ -26,6 +26,7 @@
       - 3.1 Types and Type Inference
       - 3.2 Call-by-Value Semantics and Thunking
       - 3.3 Effects: Printf and References
+      - 3.4 Exceptions
     - 4. Ltac2 as a Meta-Programming Language for Rocq
       - 4.1 Foreign Function Interface
       - 4.2 Matching Terms and Goals
@@ -617,6 +618,51 @@ Qed.
     If a branch modifies a reference and then fails, the modification persists.
     Keep this in mind when combining references with backtracking tactics.
 *)
+
+
+(** *** 3.4 Exceptions
+
+    Ltac2 has a built-in type [exn] for exceptions.
+    Several exceptions are predefined in the standard library:
+    - [Tactic_failure (msg : message option)] -- the standard tactic failure,
+      raised by most combinators and by [fail].
+    - [Out_of_bounds (msg : message option)] -- index out of range (e.g. list access).
+    - [Division_by_zero] -- integer division by zero.
+    - [Invalid_argument (msg : message option)] -- a function received an argument
+      it cannot handle.
+    - [Match_failure] -- an inexhaustive pattern match was not satisfied.
+
+    The [exn] type is open: you can add your own variants with the
+    syntax [Ltac2 Type exn ::= [myEx (type)]].
+*)
+
+Ltac2 Type exn ::= [ OutOfFuel (message option) ].
+
+(** To easiest method to build an object of type [message] is to use [fprintf]
+    that works exactly as [printf] except it returns an object of type
+    [message] instead of printing it
+
+    There are two primitives to raise an exception, with different semantics:
+
+    1. [Control.throw : exn -> 'a] -- raises a **non-backtrackable** exception.
+       It cannot be caught by the backtracking combinators [Control.plus] or
+       [try]. It is meant for programming errors or hard failures where retrying
+       makes no sense (analogous to a panic).
+*)
+
+Goal False.
+  Fail try (Control.throw (OutOfFuel (Some (fprintf "should fail")))).
+Abort.
+
+(** 2. [Control.zero : exn -> 'a] -- raises a **backtrackable** exception.
+      It signals that the current branch has no solution, which triggers
+      backtracking: [Control.plus] will try the alternative branch, and [try]
+      will silently recover. Checkout the corresponding section for more information.
+*)
+
+Goal False.
+  try (Control.zero (OutOfFuel (Some (fprintf "should succed and print nothing")))).
+Abort.
 
 
 
