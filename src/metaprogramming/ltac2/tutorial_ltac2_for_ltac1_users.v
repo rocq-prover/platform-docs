@@ -315,20 +315,22 @@ Qed.
     are imported but are currently missing notations for them in the Corelib.
     For instance, in Rocq 9.0, a notation is missing for the tactic [clearbody].
     This problem will be solved over time with contributions to the Corelib.
-
-    In the meantime, there are two workarounds.
-
-    The first option is to define the missing notation locally.
-    In this case, one should also consider contributing it upstream to the Corelib.
-    The underlying primitive lives in [Std] and expects an [ident list], so a
-    notation using the [list1(ident)] parser -- which parses one or more
-    space-separated identifiers -- is sufficient:
 *)
 
 Goal forall A, A -> A * A.
 Proof.
   intros. pose (x := 2). Fail clearbody x.
 Abort.
+
+(** In the meantime, there are two workarounds.
+
+    The first option is to define the missing notation locally.
+    In this case, one should also consider contributing it upstream to the Corelib.
+    The underlying primitive lives in [Std] and expects an [ident list], so a
+    notation using the [list1(ident)] parser -- which parses one or more
+    space-separated identifiers -- is sufficient.
+    See the corresponding section for more information.
+*)
 
 Ltac2 Notation "clearbody" ids(list1(ident)) := Std.clearbody ids.
 
@@ -377,12 +379,14 @@ Proof.
   my_exact '(eq_refl).
 Qed.
 
-Ltac2 my_intro (id : ident) :=
+Ltac2 my_intro0 (id : ident) :=
   ltac1:(id |- intro id) (Ltac1.of_ident id).
+
+Ltac2 Notation "my_intro" id(ident) := my_intro0 id.
 
 Goal forall n : nat, n = n.
 Proof.
-  my_intro @n. reflexivity.
+  my_intro n. reflexivity.
 Qed.
 
 
@@ -421,8 +425,16 @@ Ltac2 add (x : int) (y : int) : int := Int.add x y.
 Ltac2 Eval add 2 3.
 Fail Ltac2 Eval add 2 true.
 
-(** Ltac2 supports Hindley–Milner polymorphism.
-    The following identity function works at any type as its type is [`a -> `a].
+(** Ltac2 supports Hindley–Milner polymorphism, also called prenex polymorphism.
+    In prenex polymorphism, type-variable quantifiers must appear at the
+    outermost level of the type, never nested inside it.
+
+    For instance, [∀ 'a, 'a -> 'a] is a valid polymorphic type: the quantifier
+    is at the front, and the function works at any type ['a]. It is the type of
+    a function that takes an input of a type ['a] and return a value fo the same type.
+
+    However, [∀ 'a, (∀ 'b, 'b -> 'b) -> 'a] is not valid because ['b] is
+    quantified inside the type. Note, it is not the same as  [∀ 'a 'b, ('b -> 'b) -> 'a].
 *)
 
 Ltac2 my_id (x : 'a) : 'a := x.
@@ -666,6 +678,9 @@ Abort.
     - [match! goal] -- like Ltac1 [match goal]: tries patterns in order, and
       **does** backtrack into a branch if it raises an exception.
     - [multi_match! goal] -- backtracks both into branches and into patterns.
+
+    Though, it is common in Ltac1 to use cap variables for hypotheses, like [H],
+    in Ltac2, you need to use **lowercase** ones.
 *)
 
 Ltac2 print_all_hyp () :=
@@ -823,9 +838,11 @@ Abort.
     cause parsing conflicts, e.g. with variable names.
     It should be used when you want a short name for a combinator or a
     fixed tactic sequence.
+
+    In Rocq 9.2 or above, use [Ltac2 Abbreviation].
 *)
 
-Ltac2 Notation "obvious" := first [assumption | reflexivity].
+Ltac2 Notation obvious := first [assumption | reflexivity].
 
 Goal 1 = 1 /\ True.
   split; obvious.
@@ -853,7 +870,7 @@ Qed.
     - [list0(e)] -- parse a whitespace-separated, possibly empty, list of [e]
     - [list0(e, "sep")] -- same, but with a literal keyword separator [sep].
     - [list1(e)] / [list1(e, "sep")] -- like [list0] but require at least one
-      element. The notation [my_first [...]] above uses
+      element. The notation [my_first [...]] below uses
       [list1(thunk(tactic(6)), "|")] to parse one or more [|]-separated
       tactic branches.
     - [opt(e)] -- parse an optional argument [e] of type [option e]
@@ -923,7 +940,7 @@ Ltac simplify_let H :=
   end.
 
 (** In Ltac2, we need to:
-    - use lowercase for variables
+    - **use lowercase for variables**
     - use [Control.hyp] to recover the body of h
     - [Constr.type] is now a proper function rather than an ad-hoc construction
     - use the [Fresh] module to create fresh variables
