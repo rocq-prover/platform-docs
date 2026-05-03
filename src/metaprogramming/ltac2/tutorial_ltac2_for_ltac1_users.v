@@ -313,9 +313,9 @@ Proof.
 Qed.
 
 (** However, a real issue with the Ltac2 proof mode is that some tactics
-    are imported but are currently missing notations for them in the Corelib.
+    are imported but are currently missing notations for them in Ltac2 standard library.
     For instance, in Rocq 9.0, a notation is missing for the tactic [clearbody].
-    This problem will be solved over time with contributions to the Corelib.
+    This problem will be solved over time with contributions to the standard library.
 *)
 
 Goal forall A, A -> A * A.
@@ -326,7 +326,7 @@ Abort.
 (** In the meantime, there are two workarounds.
 
     The first option is to define the missing notation locally.
-    In this case, one should also consider contributing it upstream to the Corelib.
+    In this case, one should also consider contributing it upstream to the standard library.
     The underlying primitive lives in [Std] and expects an [ident list], so a
     notation using the [list1(ident)] parser -- which parses one or more
     space-separated identifiers -- is sufficient.
@@ -480,8 +480,8 @@ Ltac2 rec eval_expr (e : expr) : int :=
 (* 1 + 2×3 = 7 *)
 Ltac2 Eval eval_expr (Add (Num 1) (Mul (Num 2) (Num 3))).
 
-(** The CoreLib provides some of the usual polymorphic types like [list] and
-      [option], and a few basic functions for them.
+(** The standard library provides some of the usual polymorphic types like
+    [list] and [option], and a few basic functions for them.
 *)
 
 Ltac2 Eval [1; 2; 3].
@@ -923,7 +923,7 @@ Qed.
     - [seq(e1, e2, ...)] -- parse a fixed sequence of entries and bind them as a tuple.
 
   As an example consider reimplementing [first] using the backtracking operators
-  as implemented in the CoreLib.
+  as implemented in the Ltac2 standard library.
 *)
 
 Ltac2 rec my_first0 tacs :=
