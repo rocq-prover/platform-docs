@@ -100,8 +100,8 @@
       meta-programs is not syntactically marked. Ltac1 uses dynamic scoping rules
       to resolve names, which are hard to understand and debug.
 
-    - **Poor FFI.** Functions from the Rocq kernel are imported all at once,
-      without types and without any control over what is in scope.
+    - **Poor FFI.** Functions from the Rocq codebase are imported all at once,
+      as tactics without types and without any control over what is in scope.
 
 
     *** 1.3 Ltac2
