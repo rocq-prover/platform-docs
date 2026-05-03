@@ -310,9 +310,14 @@ Proof.
   do 1 (exact HP).
 Qed.
 
-(** However, a real issue with the Ltac2 proof mode is that some tactics
+(** However, a real issue with the Ltac2 proof mode is that some functions
     are imported but are currently missing notations for them in Ltac2 standard library.
-    For instance, in Rocq 9.0, a notation is missing for the tactic [clearbody].
+    For instance, in Rocq 9.0, tactic [clearbody] is exposed as the Ltac2 function
+
+    [[Ltac2 @ external clearbody : ident list -> unit := "rocq-runtime.plugins.ltac2" "tac_clearbody"]]
+
+    but is lacking a notation enabling us to directly write [clearbody x y] to
+    clear the body of the local definitions [x] and [y].
     This problem will be solved over time with contributions to the standard library.
 *)
 
