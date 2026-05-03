@@ -41,7 +41,7 @@
     - Familiarity with Ltac1 and basic Rocq proof writing.
 
     Installation:
-    - Ltac2 and its core library are available by default with Rocq.
+    - Ltac2 and its standard library are available by default with Rocq.
 
 *)
 
@@ -139,8 +139,8 @@
     strongly encourage users to use Ltac2 (or other alternatives) instead of Ltac1
     for new projects and new automation code in existing projects.
 
-    It comes with a Core Library that is meant to contain basic building blocks
-    for creating complex tactics. The Core Library keeps evolving and may contain
+    It comes with a standard Library that is meant to contain basic building blocks
+    for creating complex tactics. The standard Library keeps evolving and may contain
     more exposed primitives in more recent versions of Rocq.
     See https://github.com/rocq-prover/rocq/tree/master/theories/Ltac2 for
     the master branch of Rocq.
@@ -210,9 +210,9 @@ Qed.
 (** Importantly, [ltac2:(...)] creates a scope boundary: the code inside is pure
       Ltac2, and Ltac1 variables are not in scope there.
 
-    For instance, in a function [my_intro (id : ident) := ltac2:(intro id)], the
-    [id] inside [ltac2:(...)] would be treated as the Ltac2 literal name [id],
-    not as the Ltac1 variable -- so the tactic would always introduce a
+    For instance, in a Ltac1 function [my_intro (id : ident) := ltac2:(intro id)],
+    the [id] inside [ltac2:(...)] would be treated as the Ltac2 literal name [id],
+    not as the Ltac1 variable. The resulting tactic would always introduce a
     hypothesis named [id] regardless of what was passed.
 
     To pass Ltac1 values across this boundary, one uses the binder syntax
@@ -248,8 +248,6 @@ Qed.
     Moreover, [tac1; tac2; [tac31 | tac32]] is parsed as
     [(tac1; tac2); [tac31 | tac32]].
 *)
-
-Set Default Proof Mode "Classic".
 
 Goal forall P Q R S : Prop, P -> Q -> R -> S -> (P /\ Q) /\ (R /\ S).
 Proof.
@@ -422,7 +420,8 @@ Qed.
     automatically figure out the type is `int -> int -> int`:
 *)
 
-Ltac2 add (x : int) (y : int) : int := Int.add x y.
+Ltac2 add x y : int := Int.add x y.
+Ltac2 Check add.
 Ltac2 Eval add 2 3.
 Fail Ltac2 Eval add 2 true.
 
@@ -438,7 +437,8 @@ Fail Ltac2 Eval add 2 true.
     quantified inside the type. Note that it is not the same as [∀ 'a 'b, ('b -> 'b) -> 'a].
 *)
 
-Ltac2 my_id (x : 'a) : 'a := x.
+Ltac2 my_id x := x.
+Ltac2 Check my_id.
 Ltac2 Eval my_id 42.
 Ltac2 Eval my_id true.
 
@@ -521,6 +521,7 @@ Ltac2 bad_ignore (_ : unit) : unit := ().
 *)
 
 Goal True.
+Proof.
   Fail bad_ignore fail.
 Abort.
 
@@ -547,6 +548,7 @@ Qed.
 Ltac2 Notation good_ignore := good_ignore0.
 
 Goal True.
+Proof.
   good_ignore fail.
   exact I.
 Qed.
@@ -582,6 +584,7 @@ Ltac2 print_type0 (h : ident) :=
 Ltac2 Notation "print_type" h(ident) := print_type0 h.
 
 Goal nat -> bool -> True.
+Proof.
   intros a b.
   print_type a.
   print_type b.
@@ -606,6 +609,7 @@ Abort.
 *)
 
 Goal forall (n m : nat), True.
+Proof.
   intros n m.
   let count := Ref.ref 0 in
   clear n; Ref.incr count;
@@ -651,6 +655,7 @@ Ltac2 Type exn ::= [ OutOfFuel (message option) ].
 *)
 
 Goal False.
+Proof.
   Fail try (Control.throw (OutOfFuel (Some (fprintf "should fail")))).
 Abort.
 
@@ -661,6 +666,7 @@ Abort.
 *)
 
 Goal False.
+Proof.
   try (Control.zero (OutOfFuel (Some (fprintf "should succeed and print nothing")))).
 Abort.
 
@@ -679,7 +685,7 @@ Abort.
     This enables easy access to APIs that were not accessible in Ltac1,
     making Ltac2 much more expressive.
 
-    Many APIs are exposed in different modules in the core library available at:
+    Many APIs are exposed in different modules in the standard library available at:
     https://github.com/rocq-prover/rocq/tree/master/theories/Ltac2
 
     Most notable examples:
@@ -690,7 +696,7 @@ Abort.
     - [Unification]: to call unification in a controlled way
     - [Constr.Unsafe]: to access the raw kernel representation of terms
 
-    The full core library is at:
+    The full standard library is at:
     https://github.com/rocq-prover/rocq/tree/master/theories/Ltac2
 
     For example, [Constr.type] retrieves the type of a term and [Std.eval_hnf]
@@ -706,6 +712,7 @@ Ltac2 print_hnf_type0 (h : ident) : unit :=
 Ltac2 Notation "print_hnf_type" h(ident) := print_hnf_type0 h.
 
 Goal (let x := 1 in x = 1) -> False.
+Proof.
   intros x. print_hnf_type x.
 Abort.
 
@@ -715,18 +722,11 @@ Abort.
     Ltac1 provides [lazymatch], [match] and [multimatch] for matching
     patterns and goals. This still exists in Ltac2 but has changed syntax to
     avoid confusion with the [match] for matching algebraic types.
-
     The new syntax is [lazy_match!], [match!], and [multi_match!].
-    Ltac2 provides three matching combinators:
+    Otherwise, they work as in Ltac1.
 
-    - [lazy_match! goal] -- like Ltac1 [lazymatch goal]: tries patterns in order,
-      does **not** backtrack into a branch once a pattern has matched.
-    - [match! goal] -- like Ltac1 [match goal]: tries patterns in order, and
-      **does** backtrack into a branch if it raises an exception.
-    - [multi_match! goal] -- backtracks both into branches and into patterns.
-
-    Although it is common in Ltac1 to use uppercase variables for hypotheses, like [H],
-    in Ltac2 you need to use **lowercase** ones.
+    Although it is common in Ltac1 to use uppercase variables for hypotheses,
+    like [H], keep in mind in Ltac2 you need to use **lowercase** ones.
 *)
 
 Ltac2 print_all_hyp () :=
@@ -736,6 +736,7 @@ Ltac2 print_all_hyp () :=
   end.
 
 Goal nat -> bool -> 0 = 1 -> False.
+Proof.
   intros. print_all_hyp ().
 Abort.
 
@@ -752,6 +753,7 @@ Ltac2 print_body_hyp_letin () : unit :=
   end.
 
 Goal forall x y : nat, (let a := x + 2 in let b := y + 1 in a = b) -> True.
+Proof.
   intros. print_body_hyp_letin ().
 Abort.
 
@@ -780,12 +782,13 @@ Proof.
 Qed.
 
 (** In Ltac2, every Rocq term must be explicitly **quoted** with ['] which
-    produces a Ltac2 term of type [constr], and **unquoted** to recover a Rocq term.
+    produces a Ltac2 term of type [constr], and **unquoted** to recover a Rocq
+    term using [$]. Note, for complex implementation reason [$] can only be
+    applied to variables.
 
     If we wanted to rewrite [ltac1_close_conj] in Ltac2, we would take variable
     [t : constr] as argument, as [constr] is the only type we can manipulate.
-    Yet, to apply it to [exact] which expects a Rocq term, we need to unquote it.
-    This gives us:
+    Yet, to apply it to [exact] which expects an unquoted term, which gives us:
 
 *)
 
@@ -891,6 +894,7 @@ Abort.
 Ltac2 Notation obvious := first [assumption | reflexivity].
 
 Goal 1 = 1 /\ True.
+Proof.
   split; obvious.
 Qed.
 
@@ -927,10 +931,10 @@ Qed.
 *)
 
 Ltac2 rec my_first0 tacs :=
-match tacs with
-| [] => Control.zero (Tactic_failure None)
-| tac :: tacs => Control.enter (fun _ => orelse tac (fun _ => my_first0 tacs))
-end.
+  match tacs with
+  | [] => Control.zero (Tactic_failure None)
+  | tac :: tacs => Control.enter (fun _ => orelse tac (fun _ => my_first0 tacs))
+  end.
 
 (** To write a notation for it, we write:
 
@@ -958,6 +962,7 @@ end.
 Ltac2 Notation "my_first" "[" tacs(list0(thunk(tactic(6)), "|")) "]" := my_first0 tacs.
 
 Goal True.
+Proof.
   my_first [ (printf "tactic 1"; fail) | (printf "tactic 2"; fail) | exact I ].
 Qed.
 
@@ -974,16 +979,23 @@ Qed.
 *)
 
 Ltac simplify_let H :=
-  let H := lazymatch goal with [ H : let var := ?t in _ |- _ ] => H end in
   let type_h := type of H in
   lazymatch type_h with
   | let var := ?expr in ?body =>
       idtac body;
       let x := fresh "x" in
       set (x := expr) in *;
-      change (body x) in H;
+      change ((fun var => body) x) in H;
       lazy head beta in H
   end.
+
+Set Default Proof Mode "Classic".
+
+Goal forall x y : nat, (let a := x + 2 in let b := y + 1 in a = b) -> True.
+  intros x y h.
+  Fail simplify_let x.
+  simplify_let h.
+Abort.
 
 (** In Ltac2, we need to:
     - **use lowercase for variables**
@@ -998,13 +1010,15 @@ Ltac simplify_let H :=
 
 *)
 
+Set Default Proof Mode "Ltac2".
+
 Import Control Constr.
 
-Ltac2 simplify_let (h : ident) : unit :=
+Ltac2 simplify_let0 (h : ident) : unit :=
   let type_h := type (hyp h) in
   lazy_match! type_h with
   | let var := ?expr in @?body var =>
-      printf "the body is :%t" body;
+      printf "the body is: %t" body;
       let x := Fresh.in_goal @x in
       set ($x := $expr) in *;
       let x := hyp x in
@@ -1012,18 +1026,28 @@ Ltac2 simplify_let (h : ident) : unit :=
       lazy head beta in h
   end.
 
+Ltac2 Notation "simplify_let" h(ident) := simplify_let0 h.
+
+Goal forall x y : nat, (let a := x + 2 in let b := y + 1 in a = b) -> True.
+  intros x y h.
+  Fail simplify_let x.
+  simplify_let h.
+Abort.
+
 (** The advantage of Ltac2 is that the FFI interface enables us to write scripts
     we could not have in Ltac1. For instance, we can now use the [Constr.Unsafe]
     API to write the [simplify_let] tactic by directly accessing the structure
     of the term, and performing the substitution by hand rather than relying on
-    high-level tactics like [lazy head beta].
+    high-level tactics like [lazy head beta]. This can be seend by
+    printing the resulting body.
 *)
 Import Unsafe.
 
-Ltac2 simplify_let_bis (h : ident) : unit :=
+Ltac2 simplify_let_bis0 (h : ident) : unit :=
   let type_h := type (hyp h) in
   match kind type_h with
   | LetIn _ expr body =>
+      printf "the body is: %t" body;
       let x := Fresh.in_goal @x in
       set ($x := $expr) in *;
       let x := hyp x in
@@ -1031,3 +1055,11 @@ Ltac2 simplify_let_bis (h : ident) : unit :=
       change ($new_body) in h
   | _ => fail
   end.
+
+Ltac2 Notation "simplify_let_bis" h(ident) := simplify_let_bis0 h.
+
+Goal forall x y : nat, (let a := x + 2 in let b := y + 1 in a = b) -> True.
+  intros x y h.
+  Fail simplify_let_bis x.
+  simplify_let_bis h.
+Abort.
