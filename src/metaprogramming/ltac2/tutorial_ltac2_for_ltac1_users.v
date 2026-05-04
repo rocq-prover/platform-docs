@@ -311,14 +311,16 @@ Proof.
 Qed.
 
 (** However, a real issue with the Ltac2 proof mode is that some functions
-    are imported but are currently missing notations for them in Ltac2 standard library.
-    For instance, in Rocq 9.0, tactic [clearbody] is exposed as the Ltac2 function
+    are imported but are currently missing notations to handle the quoting
+    from Rocq to Ltac2.
+    For instance, in Rocq 9.0, the function [clearbody] is exposed in
+    the standard library as:
 
     [[Ltac2 @ external clearbody : ident list -> unit := "rocq-runtime.plugins.ltac2" "tac_clearbody"]]
 
-    but is lacking a notation enabling us to directly write [clearbody x y] to
-    clear the body of the local definitions [x] and [y].
-    This problem will be solved over time with contributions to the standard library.
+    However, is lacking a notation enabling us to directly write [clearbody x y]
+    to clear the body of the local definitions [x] and [y].
+    You would have to write the quoting yourself [clearbody [@x; @y]].
 *)
 
 Goal forall A, A -> A * A.
@@ -326,7 +328,7 @@ Proof.
   intros. pose (x := 2). Fail clearbody x.
 Abort.
 
-(** In the meantime, there are two workarounds.
+(** In the meantime, there are two main workarounds not to write the quoting yourself.
 
     The first option is to define the missing notation locally.
     In this case, one should also consider contributing it upstream to the standard library.
@@ -878,7 +880,7 @@ Abort.
       since different decisions can be performed depending on the exception raised.
 
     - [Control.case : (unit -> 'a) -> ('a * (exn -> 'a)) result] -- inspects
-      whether a tactic has at least one success without consuming it.
+      whether a tactic has at least one success.
 
 
     *** 4.5 Notations
@@ -1008,6 +1010,7 @@ Abort.
     - [Constr.type] is now a proper function rather than an ad-hoc construction
     - use the [Fresh] module to create fresh variables
     - use [$] to unquote variables back to Rocq's world
+    - use [@] to create Rocq identifier
 
   In the end, this gives us a script that is similar but with a few
   decorations and clearer semantics, which can be written with or without
