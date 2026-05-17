@@ -380,7 +380,7 @@ Abort.
     which given a thunk [h] returns either:
     1. an error [Err e] where [e] is an exception
     2. or a pair [Res (x,k)] where [x : 'a] is the first succes of [h], and
-       [k : exn -> 'a] is the  backtracking continuation to try in case of subsequent failure.
+       [k : exn -> 'a] is the backtracking continuation to try in case of subsequent failure.
 
     In the stream model, this basically consists in matching the stream checking
     if it is empty, and if not return the head with the rest of the stream.
