@@ -82,16 +82,24 @@ Search "add" Nat.mul.
     - has [Nat.odd] in the type *)
 Search Nat.add "mul" Nat.odd.
 
-(** We can also _filter out_ results satisfying a criterion by prepending
-    it with a minus [-] symbol.
-    Say we're looking for a lemma stating that the sum of an even number and an
-    odd number is odd: *)
+
+(** You can also filter results that match a specific criterion by placing a 
+    minus sign [-] in front of it. 
+    This effectively removes any items that meet that criterion.
+    For example, if you want lemmas involving sums of natural numbers 
+    and odd numbers, but excluding lemma with "mul".
+ *)
+Search Nat.odd Nat.add -"mul".
+
+(** As a reminder, if you just want lemmas involving sums of natural numbers 
+   and odd numbers.
+ *)
+
 Search Nat.odd Nat.add.
 
-(** This is already good, but we're not interested in lemmas whose name
-    contain "mul", so we can filter them out to get clearer results by adding
-    [-"mul"]: *)
-Search Nat.odd Nat.add -"mul".
+(**You may also prefer not to include any elements from [Nat.mul]
+ *)
+Search Nat.add Nat.odd -Nat.mul.
 
 (** **** 1.1.1 Exercise: Find Parity Results on [nat] *)
 
