@@ -258,8 +258,8 @@ Qed.
 (** In Ltac2, this is now written with the syntax [tac1 > [tac21 | tac22]] in order
     to avoid confusion between chaining tactics and dispatching. 
     The latter is asymetric and does not compose opposite to [;]. 
-    Moreover, [tac1; tac2; [tac31 | tac32]]
-    is now parsed as [tac1; (tac2; [tac31 | tac32])] as Ltac2 no longer
+ Moreover, [tac1; tac2 > [tac31 | tac32]]
+ is now parsed as [tac1; (tac2 > [tac31 | tac32])] as Ltac2 no longer
     automatically delays tactic execution.
 
     Consequently, if [tac1] generates multiple goals, the dispatcher will
@@ -947,7 +947,7 @@ Ltac2 rec my_first0 tacs :=
 
 (** To write a notation for it, we write:
 
-    - ["my_first"] and ["["] / ["]"] are literal keywords that the parser matches
+    - ["my_first"] and "[" / "]" are literal keywords that the parser matches
       verbatim; so that [my_first [...]] is unambiguous
 
     - [tacs] is the name bound in the body to the parsed argument
