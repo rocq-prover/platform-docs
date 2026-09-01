@@ -101,12 +101,37 @@ Proof.
   intros **.
 Abort.
 
+(* begin hide *)
+(* Stop pretty printing
+   --------------------
+   By default, coqdoc pretty prints '*' as '×'.
+   The command below stops pretty-printing for '*',
+   so that [intros *] remains as is.
+*)
+(* end hide *)
+(** remove printing * *)
+
 (** As a variant of [intros], [intros *] will introduce all the hypothesis
     from the goal until it reaches one depending on already introduced hypotheses,
     or that there is no more hypotheses to introduce.
     In this example, [intros *] will introduce [n] and [m], then stops at [n < m]
     as it depends on [n] and [m] that it has just introduced.
 *)
+(* begin hide *)
+(* Recover pretty printing
+   -----------------------
+   This hiding block is a trick. We need to
+   recover pretty printing. However, if we issue
+   the recovery command immediately following text,
+   then the command will be considered as text and
+   get rendered. We need to have at least a trivial
+   hide block.
+
+   Do not leave empty lines before the hide block,
+   or they may appear in the upcoming code block.
+*)
+(* end hide *)
+(** printing * %\ensuremath{\times}% #×# *)
 
 Goal forall n m, n < m -> n <= m.
 Proof.
