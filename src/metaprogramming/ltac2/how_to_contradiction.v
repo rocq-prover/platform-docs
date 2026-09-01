@@ -96,7 +96,7 @@ From Ltac2 Require Import Ltac2 Constr Printf.
     inconsistent context. It is not meant to be linked with other tactics.
     Consequently, we have no use for [multimatch!] to implement [contradiction].
     Choosing between [lazy_match!] and [match!] really depends on whether we need
-    more than a syntactic checkr, as we will see in the rest of this document.
+    more than a syntactic checker, as we will see in the rest of this document.
 *)
 
 
@@ -159,7 +159,7 @@ Abort.
       destruct ($np $p)
     ]]
 
-    Notation, to do [Control.hyp] and [$] at once is only available in Rocq 9.1 or above.
+    Notation [$hyp:] to do [Control.hyp] and [$] at once is only available in Rocq 9.1 or above.
 
     This leads us to the following script:
 *)
