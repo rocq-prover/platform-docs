@@ -159,7 +159,7 @@ Abort.
       destruct ($np $p)
     ]]
 
-    Notation to do [Control.hyp] and [$] at once is only available in Rocq 9.1 or above.
+    Notation [$hyp:] to do [Control.hyp] and [$] at once is only available in Rocq 9.1 or above.
 
     This leads us to the following script:
 *)
